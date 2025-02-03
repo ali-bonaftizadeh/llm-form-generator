@@ -677,4 +677,11 @@ public class SignalEventTest extends PluggableActivitiTestCase {
     assertThat(taskService.createTaskQuery().taskName("Task C").count()).isEqualTo(taskCCount);
   }
 
+  @Deployment
+  public void testSignalSubProcess() {
+    runtimeService.startProcessInstanceByKey("signalSubProcess");
+    assertThat(runtimeService.createProcessInstanceQuery().count()).isEqualTo(2);
+    assertThat(taskService.createTaskQuery().count()).isEqualTo(1);
+  }
+
 }

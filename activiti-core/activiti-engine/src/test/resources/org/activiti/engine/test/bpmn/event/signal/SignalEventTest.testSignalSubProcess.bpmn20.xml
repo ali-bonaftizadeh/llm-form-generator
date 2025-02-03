@@ -1,0 +1,58 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<definitions id="definitions"
+             xmlns="http://www.omg.org/spec/BPMN/20100524/MODEL" xmlns:activiti="http://activiti.org/bpmn"
+             targetNamespace="Examples">
+
+  <signal id="startSignal" name="startSignal"></signal>
+  <signal id="continueSignal" name="continueSignal" ></signal>
+
+  <process id="signalSubProcess" name="sample-process" isExecutable="true">
+    <startEvent id="Event_0v97c2r">
+      <outgoing>Flow_17p5jqs</outgoing>
+    </startEvent>
+    <endEvent id="Event_10t9ag1">
+      <incoming>Flow_03tcc5b</incoming>
+    </endEvent>
+
+    <subProcess id="Activity_07nsjwv" name="subProcess" triggeredByEvent="true">
+      <startEvent id="Event_10e4by1" isInterrupting="true">
+        <outgoing>Flow_0r1otho</outgoing>
+        <signalEventDefinition signalRef="startSignal"></signalEventDefinition>
+      </startEvent>
+      <userTask id="Activity_12x8r9z" activiti:assignee="${initiator}">
+        <incoming>Flow_0r1otho</incoming>
+        <outgoing>Flow_1itsajp</outgoing>
+      </userTask>
+      <sequenceFlow id="Flow_0r1otho" sourceRef="Event_10e4by1" targetRef="Activity_12x8r9z"></sequenceFlow>
+      <sequenceFlow id="Flow_1itsajp" sourceRef="Activity_12x8r9z" targetRef="Event_1p2no3s"></sequenceFlow>
+      <intermediateThrowEvent id="Event_1p2no3s">
+        <incoming>Flow_1itsajp</incoming>
+        <outgoing>Flow_0p39pcq</outgoing>
+        <signalEventDefinition signalRef="continueSignal"></signalEventDefinition>
+      </intermediateThrowEvent>
+      <endEvent id="Event_0x6c22y">
+        <incoming>Flow_0p39pcq</incoming>
+      </endEvent>
+      <sequenceFlow id="Flow_0p39pcq" sourceRef="Event_1p2no3s" targetRef="Event_0x6c22y"></sequenceFlow>
+    </subProcess>
+
+    <intermediateThrowEvent id="Event_1t64oh3">
+      <incoming>Flow_17p5jqs</incoming>
+      <outgoing>Flow_10tf829</outgoing>
+      <signalEventDefinition signalRef="startSignal"></signalEventDefinition>
+    </intermediateThrowEvent>
+    <sequenceFlow id="Flow_17p5jqs" sourceRef="Event_0v97c2r" targetRef="Event_1t64oh3"></sequenceFlow>
+    <userTask id="Activity_134zpb8" activiti:assignee="${initiator}">
+      <incoming>Flow_10wjnuh</incoming>
+      <outgoing>Flow_03tcc5b</outgoing>
+    </userTask>
+    <sequenceFlow id="Flow_03tcc5b" sourceRef="Activity_134zpb8" targetRef="Event_10t9ag1"></sequenceFlow>
+    <sequenceFlow id="Flow_10tf829" sourceRef="Event_1t64oh3" targetRef="Event_03kgraa"></sequenceFlow>
+    <sequenceFlow id="Flow_10wjnuh" sourceRef="Event_03kgraa" targetRef="Activity_134zpb8"></sequenceFlow>
+    <intermediateCatchEvent id="Event_03kgraa">
+      <incoming>Flow_10tf829</incoming>
+      <outgoing>Flow_10wjnuh</outgoing>
+      <signalEventDefinition signalRef="continueSignal"></signalEventDefinition>
+    </intermediateCatchEvent>
+  </process>
+</definitions>

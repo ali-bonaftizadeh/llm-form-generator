@@ -16,10 +16,12 @@
 
 package org.activiti.engine.impl.bpmn.deployer;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.activiti.bpmn.model.BpmnModel;
 import org.activiti.bpmn.model.EventDefinition;
+import org.activiti.bpmn.model.EventSubProcess;
 import org.activiti.bpmn.model.FlowElement;
 import org.activiti.bpmn.model.Message;
 import org.activiti.bpmn.model.MessageEventDefinition;
@@ -135,35 +137,81 @@ public class EventSubscriptionManager {
     }
 
     protected void addSignalEventSubscriptions(CommandContext commandContext,
-                                               ProcessDefinitionEntity processDefinition,
-                                               Process process,
-                                               BpmnModel bpmnModel) {
-        if (process != null && CollectionUtil.isNotEmpty(process.getFlowElements())) {
-            for (FlowElement element : process.getFlowElements()) {
-                if (element instanceof StartEvent) {
-                    StartEvent startEvent = (StartEvent) element;
-                    if (CollectionUtil.isNotEmpty(startEvent.getEventDefinitions())) {
-                        EventDefinition eventDefinition = startEvent.getEventDefinitions().get(0);
-                        if (eventDefinition instanceof SignalEventDefinition) {
-                            SignalEventDefinition signalEventDefinition = (SignalEventDefinition) eventDefinition;
-                            SignalEventSubscriptionEntity subscriptionEntity = commandContext.getEventSubscriptionEntityManager().createSignalEventSubscription();
-                            Signal signal = bpmnModel.getSignal(signalEventDefinition.getSignalRef());
-                            if (signal != null) {
-                                subscriptionEntity.setEventName(signal.getName());
-                            } else {
-                                subscriptionEntity.setEventName(signalEventDefinition.getSignalRef());
-                            }
-                            subscriptionEntity.setActivityId(startEvent.getId());
-                            subscriptionEntity.setProcessDefinitionId(processDefinition.getId());
-                            if (processDefinition.getTenantId() != null) {
-                                subscriptionEntity.setTenantId(processDefinition.getTenantId());
-                            }
+                                                       ProcessDefinitionEntity processDefinition,
+                                                       Process process,
+                                                       BpmnModel bpmnModel) {
 
-                            Context.getCommandContext().getEventSubscriptionEntityManager().insert(subscriptionEntity);
-                        }
-                    }
-                }
+        if (process == null || CollectionUtil.isEmpty(process.getFlowElements())) {
+            return;
+        }
+
+        processFlowElements(commandContext, processDefinition, bpmnModel, process.getFlowElements());
+    }
+
+    private void processFlowElements(CommandContext commandContext,
+                                     ProcessDefinitionEntity processDefinition,
+                                     BpmnModel bpmnModel,
+                                     Collection<FlowElement> flowElements) {
+        for (FlowElement element : flowElements) {
+            if (element instanceof StartEvent startEvent) {
+                processStartEvent(commandContext, processDefinition, bpmnModel, startEvent);
+            } else if (element instanceof EventSubProcess subProcess) {
+                processEventSubProcess(commandContext, processDefinition, bpmnModel, subProcess);
             }
         }
+    }
+
+    private void processEventSubProcess(CommandContext commandContext,
+                                        ProcessDefinitionEntity processDefinition,
+                                        BpmnModel bpmnModel,
+                                        EventSubProcess subProcess) {
+        for (FlowElement element : subProcess.getFlowElements()) {
+            if (element instanceof StartEvent startEvent) {
+                processStartEvent(commandContext, processDefinition, bpmnModel, startEvent);
+            }
+        }
+    }
+
+    private void processStartEvent(CommandContext commandContext,
+                                   ProcessDefinitionEntity processDefinition,
+                                   BpmnModel bpmnModel,
+                                   StartEvent startEvent) {
+        if (CollectionUtil.isEmpty(startEvent.getEventDefinitions())) {
+            return;
+        }
+
+        EventDefinition eventDefinition = startEvent.getEventDefinitions().getFirst();
+        if (eventDefinition instanceof SignalEventDefinition signalEventDefinition) {
+            String eventName = resolveSignalEventName(bpmnModel, signalEventDefinition);
+            createSignalEventSubscription(commandContext, processDefinition, startEvent, eventName);
+        }
+    }
+
+    private void createSignalEventSubscription(CommandContext commandContext,
+                                               ProcessDefinitionEntity processDefinition,
+                                               StartEvent startEvent,
+                                               String eventName) {
+
+        SignalEventSubscriptionEntity subscriptionEntity = commandContext
+            .getEventSubscriptionEntityManager()
+            .createSignalEventSubscription();
+
+        subscriptionEntity.setEventName(eventName);
+
+        subscriptionEntity.setActivityId(startEvent.getId());
+        subscriptionEntity.setProcessDefinitionId(processDefinition.getId());
+
+        if (processDefinition.getTenantId() != null) {
+            subscriptionEntity.setTenantId(processDefinition.getTenantId());
+        }
+
+        commandContext.getEventSubscriptionEntityManager().insert(subscriptionEntity);
+    }
+
+    private String resolveSignalEventName(BpmnModel bpmnModel, SignalEventDefinition signalEventDefinition) {
+        Signal signal = bpmnModel.getSignal(signalEventDefinition.getSignalRef());
+        return signal != null
+            ? signal.getName()
+            : signalEventDefinition.getSignalRef();
     }
 }
