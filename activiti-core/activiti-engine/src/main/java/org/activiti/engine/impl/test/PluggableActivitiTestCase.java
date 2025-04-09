@@ -215,7 +215,7 @@ public abstract class PluggableActivitiTestCase extends AbstractActivitiTestCase
         MSSQL {
             @Override
             protected JdbcDatabaseContainer startNewJdbcDatabaseContainer() {
-                MSSQLServerContainer mssqlserver = new MSSQLServerContainer("mcr.microsoft.com/mssql/server:2019-CU9-ubuntu-18.04")
+                MSSQLServerContainer mssqlserver = new MSSQLServerContainer("mcr.microsoft.com/mssql/server:2019-CU32-ubuntu-20.04")
                     .acceptLicense();
                 mssqlserver.addEnv("MSSQL_COLLATION", "LATIN1_GENERAL_100_CS_AS_SC_UTF8");
                 mssqlserver.start();

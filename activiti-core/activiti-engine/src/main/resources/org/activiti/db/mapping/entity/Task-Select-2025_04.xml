@@ -52,13 +52,13 @@
     <choose>
       <!-- if it's a count, only "res.id_" is needed -->
       <when test="${isCount} == true">
-        select ${distinctMode} RES.id_ as uniqueId
+        select ${distinctMode} RES.ID_ as uniqueId
       </when>
       <otherwise>
         <choose>
           <!-- if it's not a count and there's a distinct, we need to remove duplicated based on res.id_ -->
           <when test="distinctMode == 'distinct'">
-            select ${distinctMode} RES.id_ as uniqueId, RES.* ${limitBetweenWithoutFrom}
+            select ${distinctMode} RES.ID_ as uniqueId, RES.* ${limitBetweenWithoutFrom}
           </when>
           <!-- if it's not a count nor distinct, we don't need explicit res.id_ -->
           <otherwise>
@@ -524,7 +524,7 @@
         and link_groups.id_ is not null
       </if>
       <if test="key != null">
-        and res.TASK_DEF_KEY_ = #{key}
+        and RES.TASK_DEF_KEY_ = #{key}
       </if>
       <if test="keyLike != null">
         and RES.TASK_DEF_KEY_ like #{keyLike}${wildcardEscapeClause}
