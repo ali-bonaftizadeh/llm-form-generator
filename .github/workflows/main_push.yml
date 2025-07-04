@@ -81,7 +81,17 @@ jobs:
         run: |
           echo "JACOCO_REPORT_PATH=${{ github.workspace }}/activiti-coverage/target/site/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
           echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url='https://sonarcloud.io' -Dsonar.organization='activiti' -Dsonar.projectKey='Activiti_Activiti' -Dsonar.coverage.jacoco.xmlReportPaths=${{ env.JACOCO_REPORT_PATH }}" >> $GITHUB_ENV
-
+      
+          
+      # - name: Build and Test with Maven (and maybe Deploy)
+      #   shell: bash
+      #   run: mvn deploy ${{ env.MAVEN_CLI_OPTS}} ${{ env.SONAR_SCANNER_OPTS }}
+      #   env:
+      #     MAVEN_CLI_OPTS: --show-version --no-transfer-progress --settings settings.xml
+      #     MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
+      #     MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
+      #     SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        
       - name: Build and Test with Maven (and maybe Deploy)
         shell: bash
         run: mvn deploy ${{ env.MAVEN_CLI_OPTS}} ${{ env.SONAR_SCANNER_OPTS }}
@@ -90,6 +100,19 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # Jacoco merge step
+      - name: Merge Jacoco Reports
+        shell: bash
+        run: |
+          mvn -N jacoco:merge -Djacoco.destFile=activiti-coverage/target/jacoco-merged.exec
+
+      # Jacoco report step
+      - name: Generate Jacoco XML Report
+        shell: bash
+        run: |
+          mvn jacoco:report -Djacoco.dataFile=activiti-coverage/target/jacoco-merged.exec -Djacoco.report.format=xml
+
 
       - name: Echo Longest Test Run
         uses: ./.github/actions/echo-longest-run
