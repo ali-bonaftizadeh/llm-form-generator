@@ -121,18 +121,6 @@ jobs:
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # Jacoco merge step
-      - name: Merge Jacoco Reports
-        shell: bash
-        run: |
-          mvn -N jacoco:merge -Djacoco.destFile=activiti-coverage/target/jacoco-merged.exec
-
-      # Jacoco report step
-      - name: Generate Jacoco XML Report
-        shell: bash
-        run: |
-          mvn jacoco:report -Djacoco.dataFile=activiti-coverage/target/jacoco-merged.exec -Djacoco.report.format=xml
-
 
       - name: Echo Longest Test Run
         uses: ./.github/actions/echo-longest-run
