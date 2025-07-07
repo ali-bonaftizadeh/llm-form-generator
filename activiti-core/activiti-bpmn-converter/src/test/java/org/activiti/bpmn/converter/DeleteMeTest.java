@@ -19,27 +19,15 @@ import org.junit.jupiter.api.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeleteMeTest {
+    private final DeleteMe deleteMe = new DeleteMe();
+
     @Test
     public void testCoveredUTLocally() {
-        DeleteMe deleteMe = new DeleteMe();
-        assertThat(deleteMe.coveredUTLocally()).isEqualTo("This line is covered by unit tests");
+        assertThat(deleteMe.coveredUTLocally()).isEqualTo("This line is covered by unit tests directly from this module");
     }
 
     // @Test
     // public void testCoveredUTExternally() {
-    //     DeleteMe deleteMe = new DeleteMe();
-    //     assertThat(deleteMe.coveredUTExternally()).isEqualTo("This line is not covered by unit tests");
-    // }
-
-    @Test
-    public void testCoveredITLocally() {
-        DeleteMe deleteMe = new DeleteMe();
-        assertThat(deleteMe.coveredITLocally()).isEqualTo("This line is covered by Integration tests");
-    }
-
-    // @Test
-    // public void testCoveredITExternally() {
-    //     DeleteMe deleteMe = new DeleteMe();
-    //     assertThat(deleteMe.coveredITExternally()).isEqualTo("This line is not covered by Integration tests");
+    //     assertThat(deleteMe.coveredUTExternally()).isEqualTo("This line is covered by unit tests from an external module");
     // }
 }

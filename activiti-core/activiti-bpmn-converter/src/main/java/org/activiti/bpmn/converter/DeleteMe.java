@@ -18,19 +18,19 @@ package org.activiti.bpmn.converter;
 public class DeleteMe {
 
     public String coveredUTExternally() {
-        return "This line is not covered by unit tests";
+        return "This line is covered by unit tests from an external module";
     }
 
     public String coveredUTLocally() {
-        return "This line is covered by unit tests";
+        return "This line is covered by unit tests directly from this module";
     }
 
     public String coveredITExternally() {
-        return "This line is not covered by Integration tests";
+        return "This line is covered by Integration tests from an external module";
     }
 
     public String coveredITLocally() {
-        return "This line is covered by Integration tests";
+        return "This line is covered by Integration tests directly from this module";
     }
 
     public String uncovered() {

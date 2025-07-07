@@ -20,15 +20,10 @@ import org.junit.Test;
 import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeleteMeExternalTest {
-    @Test
-    public void testCoveredUTExternally() {
-        DeleteMe deleteMe = new DeleteMe();
-        assertThat(deleteMe.coveredUTExternally()).isEqualTo("This line is not covered by unit tests");
-    }
+    private final DeleteMe deleteMe = new DeleteMe();
 
     @Test
-    public void testCoveredITExternally() {
-        DeleteMe deleteMe = new DeleteMe();
-        assertThat(deleteMe.coveredITExternally()).isEqualTo("This line is not covered by Integration tests");
+    public void testCoveredUTExternally() {
+        assertThat(deleteMe.coveredUTExternally()).isEqualTo("This line is not covered by unit tests");
     }
 }
