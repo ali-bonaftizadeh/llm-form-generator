@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.activiti</groupId>
   <artifactId>activiti-parent</artifactId>
@@ -207,7 +207,7 @@
     <third-party-license-maven-plugin.version>2.5.0</third-party-license-maven-plugin.version>
     <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
     <maven-clean-plugin.version>3.4.1</maven-clean-plugin.version>
-        <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
+    <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     <maven-compiler-plugin.version>3.13.0</maven-compiler-plugin.version>
     <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
     <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
@@ -363,9 +363,12 @@ limitations under the License.
                 <excludedScopes>provided,test</excludedScopes>
                 <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti|org\.gytheio).*</excludedGroups>
                 <failIfWarning>true</failIfWarning>
-                <includedLicenses>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicensesPlusNashorn.txt</includedLicenses>
-                <licenseMergesUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/licenseMerges.txt</licenseMergesUrl>
-                <overrideUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/override-THIRD-PARTY.properties</overrideUrl>
+                <includedLicenses>
+                  https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicensesPlusNashorn.txt</includedLicenses>
+                <licenseMergesUrl>
+                  https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/licenseMerges.txt</licenseMergesUrl>
+                <overrideUrl>
+                  https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/override-THIRD-PARTY.properties</overrideUrl>
               </configuration>
             </execution>
           </executions>
@@ -414,29 +417,30 @@ limitations under the License.
                   <module name="Checker">
                     <!-- Checks for whitespace. -->
                     <module name="FileTabCharacter">
-                      <property name="severity" value="error"/>
-                      <property name="eachLine" value="true"/>
+                      <property name="severity" value="error" />
+                      <property name="eachLine" value="true" />
                     </module>
                     <module name="TreeWalker">
-                      <!-- Import settings: getting rid of redundant import, forbid star notation, defined order of imports. -->
-                      <module name="RedundantImport"/>
+                      <!-- Import settings: getting rid of redundant import, forbid star notation,
+                      defined order of imports. -->
+                      <module name="RedundantImport" />
                       <module name="AvoidStarImport">
                         <property name="excludes"
-                                  value="org.junit.Assert,org.assertj.core.api.Assertions,org.mockito.Mockito"/>
-                        <property name="allowClassImports" value="false"/>
-                        <property name="allowStaticMemberImports" value="false"/>
+                          value="org.junit.Assert,org.assertj.core.api.Assertions,org.mockito.Mockito" />
+                        <property name="allowClassImports" value="false" />
+                        <property name="allowStaticMemberImports" value="false" />
                       </module>
                       <module name="CustomImportOrder">
                         <property name="customImportOrderRules"
-                                  value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###STATIC"/>
-                        <property name="sortImportsInGroupAlphabetically" value="true"/>
-                        <property name="separateLineBetweenGroups" value="true"/>
+                          value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###STATIC" />
+                        <property name="sortImportsInGroupAlphabetically" value="true" />
+                        <property name="separateLineBetweenGroups" value="true" />
                       </module>
                       <module name="NeedBraces">
                         <property name="tokens"
-                                  value="LITERAL_IF, LITERAL_ELSE, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO"/>
+                          value="LITERAL_IF, LITERAL_ELSE, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO" />
                       </module>
-                      <module name="EqualsHashCode"/>
+                      <module name="EqualsHashCode" />
                     </module>
                   </module>
                 </checkstyleRules>
@@ -544,7 +548,8 @@ limitations under the License.
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>${jacoco-maven-plugin.version}</version>
           <configuration>
-            <!--   This change is required to get all reports scanned while executing `jacoco:merge` on the root pom (`-N` option) -->
+            <!--   This change is required to get all reports scanned while executing `jacoco:merge`
+            on the root pom (`-N` option) -->
             <fileSets>
               <fileSet>
                 <directory>${project.basedir}</directory>
@@ -658,11 +663,14 @@ limitations under the License.
                 <bannedDependencies>
                   <excludes combine.children="append">
                     <!-- Ban blacklisted logging deps (we only use SLF4J + Logback) -->
-                    <!-- In case of transitive dependency, exclude it and use 'org.slf4j:jcl-over-slf4j' instead -->
+                    <!-- In case of transitive dependency, exclude it and use
+                    'org.slf4j:jcl-over-slf4j' instead -->
                     <exclude>commons-logging:commons-log*</exclude>
-                    <!-- In case of transitive dependency, exclude it and use 'org.slf4j:log4j-over-slf4j' instead -->
+                    <!-- In case of transitive dependency, exclude it and use
+                    'org.slf4j:log4j-over-slf4j' instead -->
                     <exclude>log4j:log4j</exclude>
-                    <!-- In case of transitive dependency, exclude it and use 'org.javassist:javassist' instead -->
+                    <!-- In case of transitive dependency, exclude it and use
+                    'org.javassist:javassist' instead -->
                     <exclude>javassist:javassist</exclude>
                     <!-- Replaced by commons-lang3 -->
                     <exclude>commons-lang:commons-lang:*:jar:compile</exclude>
@@ -675,8 +683,10 @@ limitations under the License.
           </execution>
           <execution>
             <id>ban-duplicated-classes</id>
-            <!-- Using phase=none as we don't want this execution as part of the default build. The phase
-                 is specified in the "full" profile and thus the execution will only be activated when using that profile. -->
+            <!-- Using phase=none as we don't want this execution as part of the default build. The
+            phase
+                 is specified in the "full" profile and thus the execution will only be activated when using that
+            profile. -->
             <phase>none</phase>
             <goals>
               <goal>enforce</goal>
@@ -685,17 +695,20 @@ limitations under the License.
               <rules>
                 <banDuplicateClasses>
                   <ignoreClasses>
-                    <!-- Servlet API is bundled in way too many different dependencies, causing nightmares trying to
+                    <!-- Servlet API is bundled in way too many different dependencies, causing
+                    nightmares trying to
                          properly exclude everything. There were no real issues with this so far as mostly the APIs
                          are just duplicates of the exactly same sources. In ideal world, this get eventually fixed,
                          but it may very well not be worth the effort. -->
                     <ignoreClass>jakarta.servlet.*</ignoreClass>
-                    <!-- Classes in jakarta.annotation package are just marker annotations used to aid the programmers.
+                    <!-- Classes in jakarta.annotation package are just marker annotations used to
+                    aid the programmers.
                          These annotations do not influence the actual behavior of the code, so it's reasonable to
                          ignore them. Following dependencies contain these classes: 'com.google.code.findbugs:jsr305'
                          and 'com.google.code.findbugs:annotations'. -->
                     <ignoreClass>jakarta.annotation.*</ignoreClass>
-                    <!-- Exactly the same case as for above 'jakarta.annotation.*' classes. Following dependencies contain
+                    <!-- Exactly the same case as for above 'jakarta.annotation.*' classes.
+                    Following dependencies contain
                          these classes: 'net.jcip:jcip-annotations' and 'com.google.code.findbugs:annotations'. -->
                     <ignoreClass>net.jcip.annotations.*</ignoreClass>
                   </ignoreClasses>
@@ -728,13 +741,16 @@ limitations under the License.
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco-maven-plugin.version}</version>
         <executions>
-          <!-- Unit tests configuration-->
+
+          <!-- Prepare Jacoco Agent for Unit Tests -->
           <execution>
             <id>pre-unit-test</id>
             <goals>
               <goal>prepare-agent</goal>
             </goals>
           </execution>
+
+          <!-- Generate Unit Test Coverage Report -->
           <execution>
             <id>post-unit-test</id>
             <phase>test</phase>
@@ -742,7 +758,8 @@ limitations under the License.
               <goal>report</goal>
             </goals>
           </execution>
-          <!-- Integration tests configuration-->
+
+          <!-- Prepare Jacoco Agent for Integration Tests -->
           <execution>
             <id>pre-integration-test</id>
             <phase>pre-integration-test</phase>
@@ -750,6 +767,8 @@ limitations under the License.
               <goal>prepare-agent-integration</goal>
             </goals>
           </execution>
+
+          <!-- Generate Integration Test Coverage Report -->
           <execution>
             <id>post-integration-test</id>
             <phase>post-integration-test</phase>
@@ -757,8 +776,22 @@ limitations under the License.
               <goal>report-integration</goal>
             </goals>
           </execution>
+
+          <!-- Aggregate Report for Multi-Module Project -->
+          <execution>
+            <id>report-aggregate</id>
+            <phase>verify</phase>
+            <goals>
+              <goal>report-aggregate</goal>
+            </goals>
+            <configuration>
+              <outputDirectory>${project.build.directory}/jacoco-aggregate</outputDirectory>
+            </configuration>
+          </execution>
+
         </executions>
       </plugin>
+
     </plugins>
   </build>
   <reporting>
@@ -858,6 +891,20 @@ limitations under the License.
                 <id>integration-tests</id>
                 <reports>
                   <report>failsafe-report-only</report>
+                </reports>
+              </reportSet>
+            </reportSets>
+          </plugin>
+
+          <!-- Jacoco Aggregate Report for SonarCloud -->
+          <plugin>
+            <groupId>org.jacoco</groupId>
+            <artifactId>jacoco-maven-plugin</artifactId>
+            <version>${jacoco.version}</version>
+            <reportSets>
+              <reportSet>
+                <reports>
+                  <report>report-aggregate</report>
                 </reports>
               </reportSet>
             </reportSets>
