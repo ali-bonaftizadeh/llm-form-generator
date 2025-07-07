@@ -23,7 +23,7 @@ public class DeleteMeExternalIT {
     @Test
     public void testCoveredITExternally() {
         DeleteMe deleteMe = new DeleteMe();
-        assertThat(deleteMe.coveredITExternally()).isEqualTo("This line is not covered by Integration tests");
+        assertThat(deleteMe.coveredITExternally()).isEqualTo("This line is covered by Integration tests from an external module");
     }
 
 }

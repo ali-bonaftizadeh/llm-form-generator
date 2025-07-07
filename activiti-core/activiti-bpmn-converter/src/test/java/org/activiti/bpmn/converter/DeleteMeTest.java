@@ -25,9 +25,4 @@ public class DeleteMeTest {
     public void testCoveredUTLocally() {
         assertThat(deleteMe.coveredUTLocally()).isEqualTo("This line is covered by unit tests directly from this module");
     }
-
-    // @Test
-    // public void testCoveredUTExternally() {
-    //     assertThat(deleteMe.coveredUTExternally()).isEqualTo("This line is covered by unit tests from an external module");
-    // }
 }
