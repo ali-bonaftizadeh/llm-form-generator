@@ -84,19 +84,25 @@ jobs:
           fi
         env:
           DO_PUSH: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
-
       - name: Build and Test with Maven (and maybe Deploy)
         shell: bash
-        run: mvn ${{ steps.define_maven_command.outputs.command }} ${{ env.MAVEN_CLI_OPTS}} ${{ env.SONAR_SCANNER_OPTS }}
+        run: mvn ${{ steps.define_maven_command.outputs.command }} -P integration-test ${{ env.MAVEN_CLI_OPTS }} ${{ env.SONAR_SCANNER_OPTS }}
         env:
           MAVEN_CLI_OPTS: --show-version --no-transfer-progress --settings settings.xml
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      - name: List Jacoco Exec Files
+        shell: bash
+        run: find . -name "*.exec"
+
       - name: Merge Jacoco Reports
         shell: bash
         run: |
-          mvn -N jacoco:merge -Djacoco.destFile=target/jacoco-merged.exec
+          mvn -N jacoco:merge \
+            -Djacoco.destFile=target/jacoco-merged.exec \
+            -Djacoco.dataFileFiles=target/jacoco.exec,target/jacoco-it.exec
 
       - name: Generate Jacoco XML Report
         shell: bash
