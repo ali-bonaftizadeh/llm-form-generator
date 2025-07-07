@@ -16,13 +16,37 @@
 package org.activiti.bpmn.converter;
 
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class DeleteMeTest {
-    private final DeleteMe deleteMe = new DeleteMe();
 
     @Test
     public void testCoveredUTLocally() {
-        assertThat(deleteMe.coveredUTLocally()).isEqualTo("This line is covered by unit tests directly from this module");
+        DeleteMe deleteMe = new DeleteMe();
+        assertEquals("This line is covered by unit tests directly from this module", deleteMe.coveredUTLocally());
+    }
+
+    @Test
+    public void testCoveredITLocally() {
+        DeleteMe deleteMe = new DeleteMe();
+        assertEquals("This line is covered by Integration tests directly from this module", deleteMe.coveredITLocally());
+    }
+
+    @Test
+    public void testCoveredUTExternally() {
+        DeleteMe deleteMe = new DeleteMe();
+        assertEquals("This line is covered by unit tests from an external module", deleteMe.coveredUTExternally());
+    }
+
+    @Test
+    public void testCoveredITExternally() {
+        DeleteMe deleteMe = new DeleteMe();
+        assertEquals("This line is covered by Integration tests from an external module", deleteMe.coveredITExternally());
+    }
+
+    @Test
+    public void testUncovered() {
+        DeleteMe deleteMe = new DeleteMe();
+        assertEquals("This line is not covered by any tests", deleteMe.uncovered());
     }
 }
