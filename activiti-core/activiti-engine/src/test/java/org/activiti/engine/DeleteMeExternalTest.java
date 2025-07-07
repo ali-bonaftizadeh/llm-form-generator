@@ -24,6 +24,6 @@ public class DeleteMeExternalTest {
 
     @Test
     public void testCoveredUTExternally() {
-        assertThat(deleteMe.coveredUTExternally()).isEqualTo("This line is not covered by unit tests");
+        assertThat(deleteMe.coveredUTExternally()).isEqualTo("This line is covered by unit tests from an external module");
     }
 }
