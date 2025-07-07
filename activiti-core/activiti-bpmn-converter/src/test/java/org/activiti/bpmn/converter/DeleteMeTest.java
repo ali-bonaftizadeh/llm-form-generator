@@ -44,9 +44,4 @@ public class DeleteMeTest {
         assertEquals("This line is covered by Integration tests from an external module", deleteMe.coveredITExternally());
     }
 
-    @Test
-    public void testUncovered() {
-        DeleteMe deleteMe = new DeleteMe();
-        assertEquals("This line is not covered by any tests", deleteMe.uncovered());
-    }
 }
