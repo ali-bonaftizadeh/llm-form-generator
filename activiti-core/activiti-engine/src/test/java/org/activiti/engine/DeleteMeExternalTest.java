@@ -21,14 +21,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 public class DeleteMeExternalTest {
     @Test
-    public void testCallDeleteMeLocal() {
-        DeleteMeExternal external = new DeleteMeExternal();
-        assertThat(external.callDeleteMeLocal()).isEqualTo("This line is not covered by unit tests");
+    public void testCoveredUTExternally() {
+        DeleteMe deleteMe = new DeleteMe();
+        assertThat(deleteMe.coveredUTExternally()).isEqualTo("This line is not covered by unit tests");
     }
 
     @Test
-    public void testCallDeleteMeLocalIT() {
-        DeleteMeExternal external = new DeleteMeExternal();
-        assertThat(external.callDeleteMeLocalIT()).isEqualTo("This line is not covered by Integration tests");
+    public void testCoveredITExternally() {
+        DeleteMe deleteMe = new DeleteMe();
+        assertThat(deleteMe.coveredITExternally()).isEqualTo("This line is not covered by Integration tests");
     }
 }
