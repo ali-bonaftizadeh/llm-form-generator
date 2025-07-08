@@ -93,9 +93,6 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: List Jacoco Exec Files
-        shell: bash
-        run: find . -name "*.exec"
 
       - name: Merge Jacoco Reports
         shell: bash
@@ -114,13 +111,18 @@ jobs:
         run: |
           REPORT_PATH=$(find . -name 'jacoco.xml' | paste -sd "," -)
           echo "JACOCO_REPORT_PATH=$REPORT_PATH" >> $GITHUB_ENV
+      - name: Save JaCoCo XML report paths to file
+        shell: bash
+        run: |
+          find . -name 'jacoco.xml' | paste -sd "," - > jacoco_paths.txt
+          cat jacoco_paths.txt
 
       - name: Set SONAR_SCANNER_OPTS
         shell: bash
         run: |
-          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url='https://sonarcloud.io' -Dsonar.organization='activiti' -Dsonar.projectKey='Activiti_Activiti' -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATH" >> $GITHUB_ENV
-        env:
-          JACOCO_REPORT_PATH: ${{ env.JACOCO_REPORT_PATH }}
+          PATHS=$(cat jacoco_paths.txt)
+          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=activiti -Dsonar.projectKey=Activiti_Activiti -Dsonar.coverage.jacoco.xmlReportPaths=$PATHS" >> $GITHUB_ENV
+
 
       - name: Print JaCoCo Report Path and Sonar Options
         shell: bash
