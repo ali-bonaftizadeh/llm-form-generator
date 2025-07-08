@@ -12,7 +12,6 @@ on:
       - synchronize
       - labeled
 
-  # Allows to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 concurrency:
@@ -84,9 +83,10 @@ jobs:
           fi
         env:
           DO_PUSH: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
+
       - name: Build and Test with Maven (and maybe Deploy)
         shell: bash
-        run: mvn ${{ steps.define_maven_command.outputs.command }} -P integration-test ${{ env.MAVEN_CLI_OPTS }} ${{ env.SONAR_SCANNER_OPTS }}
+        run: mvn ${{ steps.define_maven_command.outputs.command }} -P integration-test ${{ env.MAVEN_CLI_OPTS }}
         env:
           MAVEN_CLI_OPTS: --show-version --no-transfer-progress --settings settings.xml
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
@@ -109,12 +109,20 @@ jobs:
         run: |
           mvn jacoco:report -Djacoco.dataFile=target/jacoco-merged.exec -Djacoco.report.format=xml
 
+      - name: Set JACOCO_REPORT_PATH
+        shell: bash
+        run: |
+          REPORT_PATH=$(find . -name 'jacoco.xml' | paste -sd "," -)
+          echo "JACOCO_REPORT_PATH=$REPORT_PATH" >> $GITHUB_ENV
+
       - name: Set SONAR_SCANNER_OPTS
         shell: bash
         run: |
-          echo "JACOCO_REPORT_PATH=$(find . -name 'jacoco.xml' | paste -sd "," -)" >> $GITHUB_ENV
-          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url='https://sonarcloud.io' -Dsonar.organization='activiti' -Dsonar.projectKey='Activiti_Activiti' -Dsonar.coverage.jacoco.xmlReportPaths=${{ env.JACOCO_REPORT_PATH }}" >> $GITHUB_ENV
-      - name: Print JaCoCo XML Path and SONAR options
+          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url='https://sonarcloud.io' -Dsonar.organization='activiti' -Dsonar.projectKey='Activiti_Activiti' -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATH" >> $GITHUB_ENV
+        env:
+          JACOCO_REPORT_PATH: ${{ env.JACOCO_REPORT_PATH }}
+
+      - name: Print JaCoCo Report Path and Sonar Options
         shell: bash
         run: |
           echo "JACOCO_REPORT_PATH: $JACOCO_REPORT_PATH"
@@ -123,16 +131,12 @@ jobs:
           JACOCO_REPORT_PATH: ${{ env.JACOCO_REPORT_PATH }}
           SONAR_SCANNER_OPTS: ${{ env.SONAR_SCANNER_OPTS }}
 
-      # - name: Print JaCoCo Report Path
-      #   shell: bash
-      #   run: |
-      #     echo "JaCoCo XML Report Path(s):"
-      #     find . -name 'jacoco.xml'
       - name: SonarCloud Scan
         shell: bash
         run: mvn ${{ env.SONAR_SCANNER_OPTS }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
 
 
       - name: Echo Longest Test Run
