@@ -107,13 +107,12 @@ jobs:
 
       - name: Set JaCoCo report path (aggregated only)
         run: |
-          JACOCO_REPORT_PATH=$(find . -type f -path "*/target/jacoco-aggregate/jacoco.xml" | paste -sd "," -)
-          echo "JACOCO_REPORT_PATH=$JACOCO_REPORT_PATH" >> $GITHUB_ENV
+          echo "JACOCO_REPORT_PATH=target/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
 
       - name: Set SONAR_SCANNER_OPTS
         shell: bash
         run: |
-          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=activiti -Dsonar.projectKey=Activiti_Activiti -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATH" >> $GITHUB_ENV
+          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=activiti -Dsonar.projectKey=Activiti_Activiti -Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
 
       - name: Print JaCoCo Report Path and Sonar Options
         shell: bash
