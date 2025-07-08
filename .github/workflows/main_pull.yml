@@ -93,7 +93,6 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-
       - name: Merge Jacoco Reports
         shell: bash
         run: |
@@ -101,28 +100,20 @@ jobs:
             -Djacoco.destFile=target/jacoco-merged.exec \
             -Djacoco.dataFileFiles=target/jacoco.exec,target/jacoco-it.exec
 
-      - name: Generate Jacoco XML Report
+      - name: Generate JaCoCo XML Report
         shell: bash
         run: |
           mvn jacoco:report -Djacoco.dataFile=target/jacoco-merged.exec -Djacoco.report.format=xml
 
-      - name: Set JACOCO_REPORT_PATH
-        shell: bash
+      - name: Set JaCoCo report path (aggregated only)
         run: |
-          REPORT_PATH=$(find . -name 'jacoco.xml' | paste -sd "," -)
-          echo "JACOCO_REPORT_PATH=$REPORT_PATH" >> $GITHUB_ENV
-      - name: Save JaCoCo XML report paths to file
-        shell: bash
-        run: |
-          find . -name 'jacoco.xml' | paste -sd "," - > jacoco_paths.txt
-          cat jacoco_paths.txt
+          JACOCO_REPORT_PATH=$(find . -type f -path "*/target/jacoco-aggregate/jacoco.xml" | paste -sd "," -)
+          echo "JACOCO_REPORT_PATH=$JACOCO_REPORT_PATH" >> $GITHUB_ENV
 
       - name: Set SONAR_SCANNER_OPTS
         shell: bash
         run: |
-          PATHS=$(cat jacoco_paths.txt)
-          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=activiti -Dsonar.projectKey=Activiti_Activiti -Dsonar.coverage.jacoco.xmlReportPaths=$PATHS" >> $GITHUB_ENV
-
+          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=activiti -Dsonar.projectKey=Activiti_Activiti -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATH" >> $GITHUB_ENV
 
       - name: Print JaCoCo Report Path and Sonar Options
         shell: bash
@@ -138,8 +129,6 @@ jobs:
         run: mvn ${{ env.SONAR_SCANNER_OPTS }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
-
 
       - name: Echo Longest Test Run
         uses: ./.github/actions/echo-longest-run
