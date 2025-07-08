@@ -110,9 +110,12 @@ jobs:
           echo "JACOCO_REPORT_PATH=target/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
 
       - name: Set SONAR_SCANNER_OPTS
+        id: set_sonar_opts
         shell: bash
         run: |
-          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=activiti -Dsonar.projectKey=Activiti_Activiti -Dsonar.coverage.jacoco.xmlReportPaths=target/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
+          REPORT_PATHS=$(find . -path '*/target/jacoco-aggregate/jacoco.xml' -exec grep -q "<package" {} \; -print | paste -sd "," -)
+          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=activiti -Dsonar.projectKey=Activiti_Activiti -Dsonar.coverage.jacoco.xmlReportPaths=${REPORT_PATHS}" >> $GITHUB_ENV
+          echo "report_paths=$REPORT_PATHS" >> $GITHUB_OUTPUT
 
       - name: Print JaCoCo Report Path and Sonar Options
         shell: bash
@@ -128,6 +131,7 @@ jobs:
         run: mvn ${{ env.SONAR_SCANNER_OPTS }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_SCANNER_OPTS: ${{ env.SONAR_SCANNER_OPTS }}
 
       - name: Echo Longest Test Run
         uses: ./.github/actions/echo-longest-run
