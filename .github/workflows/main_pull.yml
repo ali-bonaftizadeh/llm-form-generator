@@ -93,53 +93,36 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Merge Jacoco Reports
+      - name: Find and merge all JaCoCo .exec files
         shell: bash
         run: |
+          mkdir -p target/jacoco-merged
+          find . -type f \( -name "jacoco.exec" -o -name "jacoco-it.exec" \) -path "*/target/*" > exec-files.txt
+          echo "Merging the following .exec files:"
+          cat exec-files.txt
           mvn -N jacoco:merge \
-            -Djacoco.destFile=target/jacoco-merged.exec \
-            -Djacoco.dataFileFiles=target/jacoco.exec,target/jacoco-it.exec
+            -Djacoco.destFile=target/jacoco-merged/jacoco-merged.exec \
+            -Djacoco.dataFileFiles=$(paste -sd "," exec-files.txt)
 
-      - name: Generate JaCoCo XML Report
+      - name: Generate JaCoCo XML report from merged .exec
         shell: bash
         run: |
-          mvn jacoco:report -Djacoco.dataFile=target/jacoco-merged.exec -Djacoco.report.format=xml
+          mvn jacoco:report \
+            -Djacoco.dataFile=target/jacoco-merged/jacoco-merged.exec \
+            -Djacoco.outputDirectory=target/site/jacoco \
+            -Djacoco.report.format=xml
 
-      - name: Set JaCoCo report path (aggregated only)
-        run: |
-          echo "JACOCO_REPORT_PATH=target/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
+      - name: Set JaCoCo report path
+        run: echo "JACOCO_REPORT_PATH=target/site/jacoco/jacoco.xml" >> $GITHUB_ENV
 
-      - name: Set SONAR_SCANNER_OPTS from all modules
-        id: set_sonar_opts
-        shell: bash
+      - name: Set SONAR_SCANNER_OPTS
         run: |
-          REPORT_PATHS=$(find . -type f -path "*/target/jacoco-aggregate/jacoco.xml" -exec grep -q "<package" {} \; -print | paste -sd "," -)
-          if [ -z "$REPORT_PATHS" ]; then
-            echo "No jacoco.xml files with coverage found!"
-            exit 1
-          fi
-          echo "SONAR_SCANNER_OPTS=sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=activiti \
-            -Dsonar.projectKey=Activiti_Activiti \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${REPORT_PATHS}" >> $GITHUB_ENV
-          echo "report_paths=$REPORT_PATHS" >> $GITHUB_OUTPUT
-
-      - name: Print JaCoCo Report Path and Sonar Options
-        shell: bash
-        run: |
-          echo "JACOCO_REPORT_PATH: $JACOCO_REPORT_PATH"
-          echo "SONAR_SCANNER_OPTS: $SONAR_SCANNER_OPTS"
-        env:
-          JACOCO_REPORT_PATH: ${{ env.JACOCO_REPORT_PATH }}
-          SONAR_SCANNER_OPTS: ${{ env.SONAR_SCANNER_OPTS }}
+          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=activiti -Dsonar.projectKey=Activiti_Activiti -Dsonar.coverage.jacoco.xmlReportPaths=${JACOCO_REPORT_PATH}" >> $GITHUB_ENV
 
       - name: SonarCloud Scan
-        shell: bash
         run: mvn ${{ env.SONAR_SCANNER_OPTS }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_SCANNER_OPTS: ${{ env.SONAR_SCANNER_OPTS }}
 
       - name: Echo Longest Test Run
         uses: ./.github/actions/echo-longest-run
