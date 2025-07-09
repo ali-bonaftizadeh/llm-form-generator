@@ -91,84 +91,90 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Find and merge all JaCoCo .exec files
+      # Remove the manual merge step - Maven will handle this now
+
+      - name: Generate additional JaCoCo reports if needed
         shell: bash
         run: |
-          mkdir -p target/jacoco-merged
-          find . -type f \( -name "jacoco.exec" -o -name "jacoco-it.exec" \) -path "*/target/*" > exec-files.txt
-          echo "Merging the following .exec files:"
-          cat exec-files.txt
-          mvn -N jacoco:merge \
-            -Djacoco.destFile=target/jacoco-merged/jacoco-merged.exec \
-            -Djacoco.dataFileFiles=$(paste -sd "," exec-files.txt)
+          # Force regenerate aggregate report if it wasn't generated
+          if [ ! -f "target/site/jacoco-aggregate/jacoco.xml" ] || [ ! -s "target/site/jacoco-aggregate/jacoco.xml" ]; then
+            echo "Generating aggregate report..."
+            mvn jacoco:report-aggregate -Djacoco.skip=false -Dquiet=true || echo "Aggregate report generation failed"
+          fi
 
-      - name: Generate JaCoCo XML report from merged .exec
+      - name: Set JaCoCo report paths for SonarCloud
         shell: bash
         run: |
-          # The individual module reports are already being generated correctly
-          # Just try to generate a root aggregate report if possible
-          mvn jacoco:report-aggregate -Djacoco.skip=false || echo "Root aggregate report generation failed, using module reports"
+          REPORT_PATHS=""
 
-      - name: Set JaCoCo report path
-        run: |
-          # Based on your POM config, the aggregate report should be in target/jacoco-aggregate/
-          if [ -f "target/jacoco-aggregate/jacoco.xml" ]; then
-            echo "JACOCO_REPORT_PATH=target/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
-          elif [ -f "target/site/jacoco-aggregate/jacoco.xml" ]; then
-            echo "JACOCO_REPORT_PATH=target/site/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
+          # First, try the merged report (most comprehensive)
+          if [ -f "target/site/jacoco-merged/jacoco.xml" ] && grep -q "<counter" target/site/jacoco-merged/jacoco.xml 2>/dev/null; then
+            REPORT_PATHS="target/site/jacoco-merged/jacoco.xml"
+            echo "Using merged JaCoCo report"
+          # Then try aggregate report
+          elif [ -f "target/site/jacoco-aggregate/jacoco.xml" ] && grep -q "<counter" target/site/jacoco-aggregate/jacoco.xml 2>/dev/null; then
+            REPORT_PATHS="target/site/jacoco-aggregate/jacoco.xml"
+            echo "Using aggregate JaCoCo report"
+          # Fall back to collecting all module reports
           else
-            echo "JACOCO_REPORT_PATH=target/site/jacoco/jacoco.xml" >> $GITHUB_ENV
+            echo "No single aggregate report found, collecting module reports..."
+            REPORT_PATHS=$(find . -path "*/target/site/jacoco/jacoco.xml" -exec grep -l "<counter" {} \; 2>/dev/null | paste -sd "," - || true)
+            if [ -z "$REPORT_PATHS" ]; then
+              echo "No JaCoCo reports with coverage data found"
+            else
+              echo "Found module reports: $REPORT_PATHS"
+            fi
           fi
 
-      - name: Set SONAR_SCANNER_OPTS
-        id: set_sonar_opts
-        shell: bash
-        run: |
-          # Since there's no root aggregate report, we need to collect all module reports
-          # Prioritize the jacoco-aggregate reports from each module as they're more complete
-          REPORT_PATHS=$(find . -path "*/target/jacoco-aggregate/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," - || true)
-
-          # If no aggregate reports found, fall back to individual module reports
-          if [ -z "$REPORT_PATHS" ]; then
-            REPORT_PATHS=$(find . -path "*/target/site/jacoco/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," - || true)
-          fi
-
-          if [ -z "$REPORT_PATHS" ]; then
-            echo "No JaCoCo reports with coverage data found"
-            REPORT_PATHS=""
-          fi
-
-          echo "Using JaCoCo report paths: $REPORT_PATHS"
-          echo "SONAR_SCANNER_OPTS=sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=activiti \
-            -Dsonar.projectKey=Activiti_Activiti \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${REPORT_PATHS}" >> $GITHUB_ENV
-          echo "report_paths=$REPORT_PATHS" >> $GITHUB_OUTPUT
+          echo "JACOCO_REPORT_PATHS=$REPORT_PATHS" >> $GITHUB_ENV
 
       - name: Debug - Check generated files
         shell: bash
         run: |
           set +e  # Don't exit on error for debugging steps
-          echo "=== Checking for JaCoCo files ==="
-          find . -name "jacoco.xml" -type f 2>/dev/null | head -20 || echo "No jacoco.xml files found or error occurred"
+          echo "=== Checking for JaCoCo XML files ==="
+          find . -name "jacoco.xml" -type f -exec ls -la {} \; 2>/dev/null | head -20 || echo "No jacoco.xml files found"
+
           echo "=== Checking for .exec files ==="
-          find . -name "*.exec" -type f 2>/dev/null | head -20 || echo "No .exec files found or error occurred"
+          find . -name "*.exec" -type f -exec ls -la {} \; 2>/dev/null | head -20 || echo "No .exec files found"
+
           echo "=== Checking target directories ==="
           ls -la target/ 2>/dev/null || echo "No target directory"
           ls -la target/site/ 2>/dev/null || echo "No target/site directory"
-          ls -la target/jacoco-aggregate/ 2>/dev/null || echo "No target/jacoco-aggregate directory"
-          echo "=== Checking for root aggregate report ==="
-          if [ -f "target/jacoco-aggregate/jacoco.xml" ]; then
-            echo "Root aggregate report found!"
-            head -20 target/jacoco-aggregate/jacoco.xml 2>/dev/null || echo "Error reading report"
+          ls -la target/site/jacoco-merged/ 2>/dev/null || echo "No target/site/jacoco-merged directory"
+          ls -la target/site/jacoco-aggregate/ 2>/dev/null || echo "No target/site/jacoco-aggregate directory"
+
+          echo "=== Checking merged report ==="
+          if [ -f "target/site/jacoco-merged/jacoco.xml" ]; then
+            echo "Merged report found!"
+            echo "File size: $(wc -l target/site/jacoco-merged/jacoco.xml)"
+            head -10 target/site/jacoco-merged/jacoco.xml
+            echo "Has coverage data: $(grep -c '<counter' target/site/jacoco-merged/jacoco.xml || echo '0')"
           else
-            echo "No root aggregate report found"
+            echo "No merged report found"
           fi
+
+          echo "=== Checking aggregate report ==="
+          if [ -f "target/site/jacoco-aggregate/jacoco.xml" ]; then
+            echo "Aggregate report found!"
+            echo "File size: $(wc -l target/site/jacoco-aggregate/jacoco.xml)"
+            head -10 target/site/jacoco-aggregate/jacoco.xml
+            echo "Has coverage data: $(grep -c '<counter' target/site/jacoco-aggregate/jacoco.xml || echo '0')"
+          else
+            echo "No aggregate report found"
+          fi
+
+          echo "=== Final report paths for SonarCloud ==="
+          echo "JACOCO_REPORT_PATHS=$JACOCO_REPORT_PATHS"
           set -e  # Re-enable exit on error
 
       - name: SonarCloud Scan
-        run: mvn ${{ env.SONAR_SCANNER_OPTS }}
+        run: |
+          mvn sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=activiti \
+            -Dsonar.projectKey=Activiti_Activiti \
+            -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATHS
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 

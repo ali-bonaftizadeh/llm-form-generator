@@ -540,19 +540,17 @@ limitations under the License.
           <artifactId>jacoco-maven-plugin</artifactId>
           <version>${jacoco-maven-plugin.version}</version>
           <configuration>
-            <!--   This change is required to get all reports scanned while executing `jacoco:merge`
-            on the root pom (`-N` option) -->
-            <fileSets>
-              <fileSet>
-                <directory>${project.basedir}</directory>
-                <includes>
-                  <include>**/*.exec</include>
-                </includes>
-              </fileSet>
-            </fileSets>
-            <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
+              <fileSets>
+                  <fileSet>
+                      <directory>${project.basedir}</directory>
+                      <includes>
+                          <include>**/*.exec</include>
+                      </includes>
+                  </fileSet>
+              </fileSets>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco</outputDirectory>
           </configuration>
-        </plugin>
+      </plugin>
       </plugins>
     </pluginManagement>
     <plugins>
@@ -721,59 +719,74 @@ limitations under the License.
         </configuration>
       </plugin>
       <plugin>
-        <groupId>org.jacoco</groupId>
-        <artifactId>jacoco-maven-plugin</artifactId>
-        <version>${jacoco-maven-plugin.version}</version>
-        <executions>
-          <!-- Unit tests configuration-->
-          <execution>
-            <id>pre-unit-test</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
+          <groupId>org.jacoco</groupId>
+          <artifactId>jacoco-maven-plugin</artifactId>
+          <executions>
+              <!-- Unit Test Coverage -->
+              <execution>
+                  <id>pre-unit-test</id>
+                  <goals>
+                      <goal>prepare-agent</goal>
+                  </goals>
+              </execution>
+              <execution>
+                  <id>post-unit-test</id>
+                  <phase>test</phase>
+                  <goals>
+                      <goal>report</goal>
+                  </goals>
+              </execution>
 
-          <!-- Generate Unit Test Coverage Report -->
-          <execution>
-            <id>post-unit-test</id>
-            <phase>test</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-          <!-- Integration tests configuration-->
-          <execution>
-            <id>pre-integration-test</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>prepare-agent-integration</goal>
-            </goals>
-          </execution>
+              <!-- Integration Test Coverage -->
+              <execution>
+                  <id>pre-integration-test</id>
+                  <goals>
+                      <goal>prepare-agent-integration</goal>
+                  </goals>
+              </execution>
+              <execution>
+                  <id>post-integration-test</id>
+                  <phase>post-integration-test</phase>
+                  <goals>
+                      <goal>report-integration</goal>
+                  </goals>
+              </execution>
 
-          <!-- Generate Integration Test Coverage Report -->
-          <execution>
-            <id>post-integration-test</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>report-integration</goal>
-            </goals>
-          </execution>
+              <!-- Merge all .exec files -->
+              <execution>
+                  <id>merge-results</id>
+                  <phase>verify</phase>
+                  <goals>
+                      <goal>merge</goal>
+                  </goals>
+                  <configuration>
+                      <fileSets>
+                          <fileSet>
+                              <directory>${project.basedir}</directory>
+                              <includes>
+                                  <include>**/target/jacoco.exec</include>
+                                  <include>**/target/jacoco-it.exec</include>
+                              </includes>
+                          </fileSet>
+                      </fileSets>
+                      <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+                  </configuration>
+              </execution>
 
-          <!-- Aggregate Report for Multi-Module Project -->
-          <execution>
-            <id>report-aggregate</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>report-aggregate</goal>
-            </goals>
-            <configuration>
-              <outputDirectory>${project.build.directory}/jacoco-aggregate</outputDirectory>
-            </configuration>
-          </execution>
-
-        </executions>
+              <!-- Generate report from merged data -->
+              <execution>
+                  <id>post-merge-report</id>
+                  <phase>verify</phase>
+                  <goals>
+                      <goal>report</goal>
+                  </goals>
+                  <configuration>
+                      <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+                      <outputDirectory>${project.build.directory}/site/jacoco-merged</outputDirectory>
+                  </configuration>
+              </execution>
+          </executions>
       </plugin>
-
     </plugins>
   </build>
   <reporting>
