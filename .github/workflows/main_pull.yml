@@ -19,6 +19,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+
+
   pre-checks:
     runs-on: ubuntu-latest
     steps:
@@ -106,13 +108,21 @@ jobs:
       - name: Generate JaCoCo XML report from merged .exec
         shell: bash
         run: |
-          # Use jacoco:report-aggregate to generate proper multi-module report
-          mvn jacoco:report-aggregate \
-            -Djacoco.dataFile=target/jacoco-merged/jacoco-merged.exec
+          # Copy the merged exec file to each module that needs it
+          find . -name "pom.xml" -path "*/target" -prune -o -name "pom.xml" -print | while read pom; do
+            module_dir=$(dirname "$pom")
+            if [ -d "$module_dir/src/main/java" ] || [ -d "$module_dir/src/test/java" ]; then
+              mkdir -p "$module_dir/target"
+              cp target/jacoco-merged/jacoco-merged.exec "$module_dir/target/jacoco.exec"
+            fi
+          done
+
+          # Generate aggregate report from root
+          mvn jacoco:report-aggregate
 
       - name: Set JaCoCo report path
         run: |
-          # Look for the aggregate report first, then fallback to individual reports
+          # Look for the root aggregate report first, then fallback to module reports
           if [ -f "target/site/jacoco-aggregate/jacoco.xml" ]; then
             echo "JACOCO_REPORT_PATH=target/site/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
           else
@@ -123,12 +133,20 @@ jobs:
         id: set_sonar_opts
         shell: bash
         run: |
-          # Find all JaCoCo XML reports with actual coverage data
-          REPORT_PATHS=$(find . -path "*/target/site/jacoco*/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," -)
+          # First try to use the root aggregate report
+          if [ -f "target/site/jacoco-aggregate/jacoco.xml" ]; then
+            REPORT_PATHS="target/site/jacoco-aggregate/jacoco.xml"
+          else
+            # Fallback to collecting all module reports with coverage data
+            REPORT_PATHS=$(find . -path "*/target/site/jacoco*/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," -)
+          fi
+
           if [ -z "$REPORT_PATHS" ]; then
             echo "No JaCoCo reports with coverage data found"
             REPORT_PATHS=""
           fi
+
+          echo "Using JaCoCo report paths: $REPORT_PATHS"
           echo "SONAR_SCANNER_OPTS=sonar:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=activiti \
