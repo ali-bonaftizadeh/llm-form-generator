@@ -113,7 +113,7 @@ jobs:
         id: set_sonar_opts
         shell: bash
         run: |
-          REPORT_PATHS=$(find . -path '*/target/jacoco-aggregate/jacoco.xml' -exec grep -q "<package" {} \; -print | paste -sd "," -)
+          REPORT_PATHS=$(find . -type f -name 'jacoco.xml' -path '*/jacoco-aggregate/*' ! -path './target/*' | paste -sd "," -)
           echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url=https://sonarcloud.io -Dsonar.organization=activiti -Dsonar.projectKey=Activiti_Activiti -Dsonar.coverage.jacoco.xmlReportPaths=${REPORT_PATHS}" >> $GITHUB_ENV
           echo "report_paths=$REPORT_PATHS" >> $GITHUB_OUTPUT
 
