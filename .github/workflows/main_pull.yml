@@ -126,11 +126,11 @@ jobs:
         run: |
           # Since there's no root aggregate report, we need to collect all module reports
           # Prioritize the jacoco-aggregate reports from each module as they're more complete
-          REPORT_PATHS=$(find . -path "*/target/jacoco-aggregate/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," -)
+          REPORT_PATHS=$(find . -path "*/target/jacoco-aggregate/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," - || true)
 
           # If no aggregate reports found, fall back to individual module reports
           if [ -z "$REPORT_PATHS" ]; then
-            REPORT_PATHS=$(find . -path "*/target/site/jacoco/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," -)
+            REPORT_PATHS=$(find . -path "*/target/site/jacoco/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," - || true)
           fi
 
           if [ -z "$REPORT_PATHS" ]; then
@@ -149,10 +149,11 @@ jobs:
       - name: Debug - Check generated files
         shell: bash
         run: |
+          set +e  # Don't exit on error for debugging steps
           echo "=== Checking for JaCoCo files ==="
-          find . -name "jacoco.xml" -type f | head -20
+          find . -name "jacoco.xml" -type f 2>/dev/null | head -20 || echo "No jacoco.xml files found or error occurred"
           echo "=== Checking for .exec files ==="
-          find . -name "*.exec" -type f | head -20
+          find . -name "*.exec" -type f 2>/dev/null | head -20 || echo "No .exec files found or error occurred"
           echo "=== Checking target directories ==="
           ls -la target/ 2>/dev/null || echo "No target directory"
           ls -la target/site/ 2>/dev/null || echo "No target/site directory"
@@ -160,10 +161,11 @@ jobs:
           echo "=== Checking for root aggregate report ==="
           if [ -f "target/jacoco-aggregate/jacoco.xml" ]; then
             echo "Root aggregate report found!"
-            head -20 target/jacoco-aggregate/jacoco.xml
+            head -20 target/jacoco-aggregate/jacoco.xml 2>/dev/null || echo "Error reading report"
           else
             echo "No root aggregate report found"
           fi
+          set -e  # Re-enable exit on error
 
       - name: SonarCloud Scan
         run: mvn ${{ env.SONAR_SCANNER_OPTS }}
