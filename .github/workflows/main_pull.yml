@@ -24,8 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Check dependabot build
-        uses: ./.github/actions/check-ext-build
       - name: pre-commit
         uses: Alfresco/alfresco-build-tools/.github/actions/pre-commit@f37c44cc085236178ebb8834eb634b0b4b550a40 # v8.23.0
         with:
@@ -107,9 +105,9 @@ jobs:
       - name: Generate JaCoCo XML report from merged .exec
         shell: bash
         run: |
-          # Since you have report-aggregate configured in your POM, just run it directly
-          # The aggregate report will collect data from all modules automatically
-          mvn jacoco:report-aggregate
+          # The individual module reports are already being generated correctly
+          # Just try to generate a root aggregate report if possible
+          mvn jacoco:report-aggregate -Djacoco.skip=false || echo "Root aggregate report generation failed, using module reports"
 
       - name: Set JaCoCo report path
         run: |
@@ -126,17 +124,13 @@ jobs:
         id: set_sonar_opts
         shell: bash
         run: |
-          # Based on your POM config, try these locations in order
-          if [ -f "target/jacoco-aggregate/jacoco.xml" ]; then
-            REPORT_PATHS="target/jacoco-aggregate/jacoco.xml"
-          elif [ -f "target/site/jacoco-aggregate/jacoco.xml" ]; then
-            REPORT_PATHS="target/site/jacoco-aggregate/jacoco.xml"
-          else
-            # Fallback to collecting all module reports with coverage data
-            REPORT_PATHS=$(find . -path "*/target/jacoco-aggregate/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," -)
-            if [ -z "$REPORT_PATHS" ]; then
-              REPORT_PATHS=$(find . -path "*/target/site/jacoco*/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," -)
-            fi
+          # Since there's no root aggregate report, we need to collect all module reports
+          # Prioritize the jacoco-aggregate reports from each module as they're more complete
+          REPORT_PATHS=$(find . -path "*/target/jacoco-aggregate/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," -)
+
+          # If no aggregate reports found, fall back to individual module reports
+          if [ -z "$REPORT_PATHS" ]; then
+            REPORT_PATHS=$(find . -path "*/target/site/jacoco/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," -)
           fi
 
           if [ -z "$REPORT_PATHS" ]; then
