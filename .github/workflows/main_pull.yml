@@ -19,7 +19,6 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-
   pre-checks:
     runs-on: ubuntu-latest
     steps:
@@ -107,24 +106,46 @@ jobs:
       - name: Generate JaCoCo XML report from merged .exec
         shell: bash
         run: |
-          mvn jacoco:report \
-            -Djacoco.dataFile=target/jacoco-merged/jacoco-merged.exec \
-            -Djacoco.report.format=xml
+          # Use jacoco:report-aggregate to generate proper multi-module report
+          mvn jacoco:report-aggregate \
+            -Djacoco.dataFile=target/jacoco-merged/jacoco-merged.exec
 
       - name: Set JaCoCo report path
-        run: echo "JACOCO_REPORT_PATH=target/site/jacoco/jacoco.xml" >> $GITHUB_ENV
+        run: |
+          # Look for the aggregate report first, then fallback to individual reports
+          if [ -f "target/site/jacoco-aggregate/jacoco.xml" ]; then
+            echo "JACOCO_REPORT_PATH=target/site/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
+          else
+            echo "JACOCO_REPORT_PATH=target/site/jacoco/jacoco.xml" >> $GITHUB_ENV
+          fi
 
       - name: Set SONAR_SCANNER_OPTS
         id: set_sonar_opts
         shell: bash
         run: |
-          REPORT_PATHS=$(find . -path "*/target/jacoco-aggregate/jacoco.xml" -exec grep -q "<package" {} \; -print | paste -sd "," -)
+          # Find all JaCoCo XML reports with actual coverage data
+          REPORT_PATHS=$(find . -path "*/target/site/jacoco*/jacoco.xml" -exec grep -l "<package" {} \; 2>/dev/null | paste -sd "," -)
+          if [ -z "$REPORT_PATHS" ]; then
+            echo "No JaCoCo reports with coverage data found"
+            REPORT_PATHS=""
+          fi
           echo "SONAR_SCANNER_OPTS=sonar:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=activiti \
             -Dsonar.projectKey=Activiti_Activiti \
             -Dsonar.coverage.jacoco.xmlReportPaths=${REPORT_PATHS}" >> $GITHUB_ENV
           echo "report_paths=$REPORT_PATHS" >> $GITHUB_OUTPUT
+
+      - name: Debug - Check generated files
+        shell: bash
+        run: |
+          echo "=== Checking for JaCoCo files ==="
+          find . -name "jacoco.xml" -type f | head -20
+          find . -name "*.exec" -type f | head -20
+          echo "=== Checking target directories ==="
+          ls -la target/ 2>/dev/null || echo "No target directory"
+          ls -la target/site/ 2>/dev/null || echo "No target/site directory"
+          ls -la target/site/jacoco* 2>/dev/null || echo "No jacoco directories in target/site"
 
       - name: SonarCloud Scan
         run: mvn ${{ env.SONAR_SCANNER_OPTS }}
