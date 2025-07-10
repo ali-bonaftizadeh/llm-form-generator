@@ -91,6 +91,14 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      - name: Confirm report generation
+        shell: bash
+        run: |
+          echo "== .exec file =="
+          find . -name jacoco-merged.exec -exec ls -lh {} \;
+          echo "== jacoco.xml =="
+          find . -name jacoco.xml -exec ls -lh {} \;
+
       - name: Set SONAR_SCANNER_OPTS
         id: set_sonar_opts
         shell: bash
@@ -121,15 +129,12 @@ jobs:
           grep -c "<counter" $REPORT_PATH || echo "No counters found"
 
 
-      - name: Confirm coverage files
+      - name: Sanity check report
         shell: bash
         run: |
-          echo "== Merged .exec file =="
-          ls -lh target/jacoco-merged/jacoco-merged.exec || echo "Not found"
-
-          echo "== Final JaCoCo XML report =="
-          ls -lh target/jacoco-merged/jacoco.xml || echo "Not found"
-          grep -c "<counter" target/jacoco-merged/jacoco.xml || echo "No <counter> tags found"
+          ls -lh target/jacoco-merged/jacoco.xml
+          head -n 10 target/jacoco-merged/jacoco.xml
+          grep -c "<counter" target/jacoco-merged/jacoco.xml
 
 
       - name: SonarCloud Scan
