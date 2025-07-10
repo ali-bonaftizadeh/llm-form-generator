@@ -91,95 +91,63 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      # Remove the manual merge step - Maven will handle this now
-
-      - name: Generate additional JaCoCo reports if needed
+      - name: Merge all JaCoCo .exec files
         shell: bash
         run: |
-          # Force regenerate aggregate report if it wasn't generated
-          if [ ! -f "target/site/jacoco-aggregate/jacoco.xml" ] || [ ! -s "target/site/jacoco-aggregate/jacoco.xml" ]; then
-            echo "Generating aggregate report..."
-            mvn jacoco:report-aggregate -Djacoco.skip=false -Dquiet=true || echo "Aggregate report generation failed"
+          mkdir -p target/jacoco-merged
+          EXEC_FILES=$(find . -type f -name "*.exec" | paste -sd "," -)
+          if [ -z "$EXEC_FILES" ]; then
+            echo "No .exec files found to merge."
+            exit 1
           fi
+          echo "Merging exec files: $EXEC_FILES"
+          mvn jacoco:merge -Djacoco.destFile=target/jacoco-merged/jacoco-merged.exec -Djacoco.dataFile=$EXEC_FILES
+
+      - name: Generate JaCoCo aggregate XML report
+        shell: bash
+        run: |
+          echo "Generating aggregate XML report from merged exec..."
+          mvn jacoco:report-aggregate \
+            -DdataFile=target/jacoco-merged/jacoco-merged.exec \
+            -Djacoco.skip=false -Dquiet=true
 
       - name: Set SONAR_SCANNER_OPTS
         id: set_sonar_opts
         shell: bash
         run: |
-          REPORT_PATHS=""
-
-          # First, try the merged report (most comprehensive - this is our target)
-          if [ -f "target/site/jacoco-merged/jacoco.xml" ] && grep -q "<counter" target/site/jacoco-merged/jacoco.xml 2>/dev/null; then
-            REPORT_PATHS="target/site/jacoco-merged/jacoco.xml"
-            echo "Using merged JaCoCo report (preferred)"
-          # Then try aggregate report
-          elif [ -f "target/site/jacoco-aggregate/jacoco.xml" ] && grep -q "<counter" target/site/jacoco-aggregate/jacoco.xml 2>/dev/null; then
-            REPORT_PATHS="target/site/jacoco-aggregate/jacoco.xml"
-            echo "Using aggregate JaCoCo report"
-          # Fall back to collecting all module reports (temporary until merge/aggregate works)
-          else
-            echo "No single aggregate report found, collecting individual module reports..."
-            REPORT_PATHS=$(find . -path "*/target/site/jacoco/jacoco.xml" -exec grep -l "<counter" {} \; 2>/dev/null | paste -sd "," - || true)
-            if [ -z "$REPORT_PATHS" ]; then
-              echo "WARNING: No JaCoCo reports with coverage data found!"
-              echo "This suggests the JaCoCo merge/aggregate configuration needs to be fixed."
-            else
-              echo "Found individual module reports: $REPORT_PATHS"
-              echo "NOTE: Using individual reports as fallback. The goal is to use a single merged report."
-            fi
+          REPORT_PATH="target/site/jacoco-aggregate/jacoco.xml"
+          if [ ! -f "$REPORT_PATH" ] || ! grep -q "<counter" "$REPORT_PATH"; then
+            echo "ERROR: Coverage report missing or empty at $REPORT_PATH"
+            exit 1
           fi
 
-          echo "Final JaCoCo report paths: $REPORT_PATHS"
+          echo "Using JaCoCo report at $REPORT_PATH"
           echo "SONAR_SCANNER_OPTS=sonar:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=activiti \
             -Dsonar.projectKey=Activiti_Activiti \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${REPORT_PATHS}" >> $GITHUB_ENV
-          echo "report_paths=$REPORT_PATHS" >> $GITHUB_OUTPUT
-
-      - name: Debug - Check generated files
+            -Dsonar.coverage.jacoco.xmlReportPaths=$REPORT_PATH" >> $GITHUB_ENV
+          echo "report_path=$REPORT_PATH" >> $GITHUB_OUTPUT
+      - name: Check JaCoCo Report Path
         shell: bash
         run: |
-          set +e  # Don't exit on error for debugging steps
-          echo "=== Checking for JaCoCo XML files ==="
-          find . -name "jacoco.xml" -type f -exec ls -la {} \; 2>/dev/null | head -20 || echo "No jacoco.xml files found"
+          echo "Resolved JaCoCo report path:"
+          echo "${{ steps.set_sonar_opts.outputs.report_path }}"
 
-          echo "=== Checking for .exec files ==="
-          find . -name "*.exec" -type f -exec ls -la {} \; 2>/dev/null | head -20 || echo "No .exec files found"
+      - name: Confirm coverage files
+        shell: bash
+        run: |
+          echo "== Merged .exec file =="
+          ls -lh target/jacoco-merged/jacoco-merged.exec || echo "Not found"
 
-          echo "=== Checking target directories ==="
-          ls -la target/ 2>/dev/null || echo "No target directory"
-          ls -la target/site/ 2>/dev/null || echo "No target/site directory"
-          ls -la target/site/jacoco-merged/ 2>/dev/null || echo "No target/site/jacoco-merged directory"
-          ls -la target/site/jacoco-aggregate/ 2>/dev/null || echo "No target/site/jacoco-aggregate directory"
-
-          echo "=== Checking merged report ==="
-          if [ -f "target/site/jacoco-merged/jacoco.xml" ]; then
-            echo "Merged report found!"
-            echo "File size: $(wc -l target/site/jacoco-merged/jacoco.xml)"
-            head -10 target/site/jacoco-merged/jacoco.xml
-            echo "Has coverage data: $(grep -c '<counter' target/site/jacoco-merged/jacoco.xml || echo '0')"
-          else
-            echo "No merged report found"
-          fi
-
-          echo "=== Checking aggregate report ==="
-          if [ -f "target/site/jacoco-aggregate/jacoco.xml" ]; then
-            echo "Aggregate report found!"
-            echo "File size: $(wc -l target/site/jacoco-aggregate/jacoco.xml)"
-            head -10 target/site/jacoco-aggregate/jacoco.xml
-            echo "Has coverage data: $(grep -c '<counter' target/site/jacoco-aggregate/jacoco.xml || echo '0')"
-          else
-            echo "No aggregate report found"
-          fi
-
-          echo "=== Final SONAR_SCANNER_OPTS ==="
-          echo "SONAR_SCANNER_OPTS=$SONAR_SCANNER_OPTS"
-          set -e  # Re-enable exit on error
+          echo "== Final JaCoCo XML report =="
+          ls -lh target/site/jacoco-aggregate/jacoco.xml || echo "Not found"
+          grep -c "<counter" target/site/jacoco-aggregate/jacoco.xml || echo "No <counter> tags found"
 
       - name: SonarCloud Scan
         run: mvn ${{ env.SONAR_SCANNER_OPTS }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
       - name: Echo Longest Test Run
         uses: ./.github/actions/echo-longest-run
