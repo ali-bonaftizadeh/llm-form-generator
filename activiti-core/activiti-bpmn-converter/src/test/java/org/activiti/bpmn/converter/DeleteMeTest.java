@@ -25,23 +25,4 @@ public class DeleteMeTest {
         DeleteMe deleteMe = new DeleteMe();
         assertEquals("This line is covered by unit tests directly from this module", deleteMe.coveredUTLocally());
     }
-
-    @Test
-    public void testCoveredITLocally() {
-        DeleteMe deleteMe = new DeleteMe();
-        assertEquals("This line is covered by Integration tests directly from this module", deleteMe.coveredITLocally());
-    }
-
-    @Test
-    public void testCoveredUTExternally() {
-        DeleteMe deleteMe = new DeleteMe();
-        assertEquals("This line is covered by unit tests from an external module", deleteMe.coveredUTExternally());
-    }
-
-    @Test
-    public void testCoveredITExternally() {
-        DeleteMe deleteMe = new DeleteMe();
-        assertEquals("This line is covered by Integration tests from an external module", deleteMe.coveredITExternally());
-    }
-
 }
