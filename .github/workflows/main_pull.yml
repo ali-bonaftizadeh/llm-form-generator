@@ -102,31 +102,40 @@ jobs:
             mvn jacoco:report-aggregate -Djacoco.skip=false -Dquiet=true || echo "Aggregate report generation failed"
           fi
 
-      - name: Set JaCoCo report paths for SonarCloud
+      - name: Set SONAR_SCANNER_OPTS
+        id: set_sonar_opts
         shell: bash
         run: |
           REPORT_PATHS=""
 
-          # First, try the merged report (most comprehensive)
+          # First, try the merged report (most comprehensive - this is our target)
           if [ -f "target/site/jacoco-merged/jacoco.xml" ] && grep -q "<counter" target/site/jacoco-merged/jacoco.xml 2>/dev/null; then
             REPORT_PATHS="target/site/jacoco-merged/jacoco.xml"
-            echo "Using merged JaCoCo report"
+            echo "Using merged JaCoCo report (preferred)"
           # Then try aggregate report
           elif [ -f "target/site/jacoco-aggregate/jacoco.xml" ] && grep -q "<counter" target/site/jacoco-aggregate/jacoco.xml 2>/dev/null; then
             REPORT_PATHS="target/site/jacoco-aggregate/jacoco.xml"
             echo "Using aggregate JaCoCo report"
-          # Fall back to collecting all module reports
+          # Fall back to collecting all module reports (temporary until merge/aggregate works)
           else
-            echo "No single aggregate report found, collecting module reports..."
+            echo "No single aggregate report found, collecting individual module reports..."
             REPORT_PATHS=$(find . -path "*/target/site/jacoco/jacoco.xml" -exec grep -l "<counter" {} \; 2>/dev/null | paste -sd "," - || true)
             if [ -z "$REPORT_PATHS" ]; then
-              echo "No JaCoCo reports with coverage data found"
+              echo "WARNING: No JaCoCo reports with coverage data found!"
+              echo "This suggests the JaCoCo merge/aggregate configuration needs to be fixed."
             else
-              echo "Found module reports: $REPORT_PATHS"
+              echo "Found individual module reports: $REPORT_PATHS"
+              echo "NOTE: Using individual reports as fallback. The goal is to use a single merged report."
             fi
           fi
 
-          echo "JACOCO_REPORT_PATHS=$REPORT_PATHS" >> $GITHUB_ENV
+          echo "Final JaCoCo report paths: $REPORT_PATHS"
+          echo "SONAR_SCANNER_OPTS=sonar:sonar \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.organization=activiti \
+            -Dsonar.projectKey=Activiti_Activiti \
+            -Dsonar.coverage.jacoco.xmlReportPaths=${REPORT_PATHS}" >> $GITHUB_ENV
+          echo "report_paths=$REPORT_PATHS" >> $GITHUB_OUTPUT
 
       - name: Debug - Check generated files
         shell: bash
@@ -164,19 +173,13 @@ jobs:
             echo "No aggregate report found"
           fi
 
-          echo "=== Final report paths for SonarCloud ==="
-          echo "JACOCO_REPORT_PATHS=$JACOCO_REPORT_PATHS"
+          echo "=== Final SONAR_SCANNER_OPTS ==="
+          echo "SONAR_SCANNER_OPTS=$SONAR_SCANNER_OPTS"
           set -e  # Re-enable exit on error
 
       - name: SonarCloud Scan
-        run: |
-          mvn sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=activiti \
-            -Dsonar.projectKey=Activiti_Activiti \
-            -Dsonar.coverage.jacoco.xmlReportPaths=$JACOCO_REPORT_PATHS
+        run: mvn ${{ env.SONAR_SCANNER_OPTS }}
         env:
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-
       - name: Echo Longest Test Run
         uses: ./.github/actions/echo-longest-run
