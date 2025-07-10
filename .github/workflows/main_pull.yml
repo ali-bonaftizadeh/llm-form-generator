@@ -91,6 +91,9 @@ jobs:
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
+      - name: Check merged exec file
+        run: ls -lh target/jacoco-merged/jacoco-merged.exec || echo "No merged exec file found"
+
       - name: Confirm report generation
         shell: bash
         run: |

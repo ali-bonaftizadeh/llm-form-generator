@@ -768,6 +768,9 @@ limitations under the License.
           <configuration>
             <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
             <outputDirectory>${project.build.directory}/jacoco-merged</outputDirectory>
+            <sourceDirectories>
+            <directory>${project.basedir}/src/main/java</directory>
+          </sourceDirectories>
           </configuration>
         </execution>
       </executions>
