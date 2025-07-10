@@ -11,7 +11,6 @@ on:
       - reopened
       - synchronize
       - labeled
-  # Allows to run this workflow manually from the Actions tab
   workflow_dispatch:
 
 concurrency:
@@ -82,40 +81,21 @@ jobs:
         env:
           DO_PUSH: ${{ contains(github.event.pull_request.labels.*.name, 'preview') }}
 
-      - name: Build and Test with Maven (and maybe Deploy)
+      - name: Build, Test, Merge and Generate Coverage Report
         shell: bash
-        run: mvn ${{ steps.define_maven_command.outputs.command }} -P integration-test ${{ env.MAVEN_CLI_OPTS }}
+        run: |
+          mvn ${{ steps.define_maven_command.outputs.command }} -P integration-test ${{ env.MAVEN_CLI_OPTS }}
         env:
           MAVEN_CLI_OPTS: --show-version --no-transfer-progress --settings settings.xml
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
-      - name: Merge all JaCoCo .exec files
-        shell: bash
-        run: |
-          mkdir -p target/jacoco-merged
-          EXEC_FILES=$(find . -type f -name "*.exec" | paste -sd "," -)
-          if [ -z "$EXEC_FILES" ]; then
-            echo "No .exec files found to merge."
-            exit 1
-          fi
-          echo "Merging exec files: $EXEC_FILES"
-          mvn jacoco:merge -Djacoco.destFile=target/jacoco-merged/jacoco-merged.exec -Djacoco.dataFile=$EXEC_FILES
-
-      - name: Generate JaCoCo aggregate XML report
-        shell: bash
-        run: |
-          echo "Generating aggregate XML report from merged exec..."
-          mvn jacoco:report-aggregate \
-            -DdataFile=target/jacoco-merged/jacoco-merged.exec \
-            -Djacoco.skip=false -Dquiet=true
-
       - name: Set SONAR_SCANNER_OPTS
         id: set_sonar_opts
         shell: bash
         run: |
-          REPORT_PATH="target/site/jacoco-aggregate/jacoco.xml"
+          REPORT_PATH="target/site/jacoco-merged/jacoco.xml"
           if [ ! -f "$REPORT_PATH" ] || ! grep -q "<counter" "$REPORT_PATH"; then
             echo "ERROR: Coverage report missing or empty at $REPORT_PATH"
             exit 1
@@ -128,6 +108,7 @@ jobs:
             -Dsonar.projectKey=Activiti_Activiti \
             -Dsonar.coverage.jacoco.xmlReportPaths=$REPORT_PATH" >> $GITHUB_ENV
           echo "report_path=$REPORT_PATH" >> $GITHUB_OUTPUT
+
       - name: Check JaCoCo Report Path
         shell: bash
         run: |
@@ -141,8 +122,8 @@ jobs:
           ls -lh target/jacoco-merged/jacoco-merged.exec || echo "Not found"
 
           echo "== Final JaCoCo XML report =="
-          ls -lh target/site/jacoco-aggregate/jacoco.xml || echo "Not found"
-          grep -c "<counter" target/site/jacoco-aggregate/jacoco.xml || echo "No <counter> tags found"
+          ls -lh target/site/jacoco-merged/jacoco.xml || echo "Not found"
+          grep -c "<counter" target/site/jacoco-merged/jacoco.xml || echo "No <counter> tags found"
 
       - name: SonarCloud Scan
         run: mvn ${{ env.SONAR_SCANNER_OPTS }}
