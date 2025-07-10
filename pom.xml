@@ -705,7 +705,7 @@ limitations under the License.
       <plugin>
       <groupId>org.jacoco</groupId>
       <artifactId>jacoco-maven-plugin</artifactId>
-      <version>${jacoco.version}</version>
+      <version>${jacoco-maven-plugin.version}</version>
       <executions>
         <!-- Unit Test Coverage -->
         <execution>
