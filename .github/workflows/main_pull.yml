@@ -90,6 +90,13 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Generate JaCoCo aggregate report (XML + HTML)
+        shell: bash
+        run: |
+          mvn jacoco:report-aggregate \
+            -Djacoco.dataFile=target/jacoco-merged/jacoco-merged.exec \
+            -Djacoco.outputDirectory=target/site/jacoco-aggregate \
+            -Djacoco.skip=false
 
       - name: Debug-> Check for compiled .class files
         run: |
@@ -112,7 +119,7 @@ jobs:
         id: set_sonar_opts
         shell: bash
         run: |
-          REPORT_PATH="target/jacoco-merged/jacoco.xml"
+          REPORT_PATH="target/site/jacoco-aggregate/jacoco.xml"
           if [ ! -f "$REPORT_PATH" ] || ! grep -q "<counter" "$REPORT_PATH"; then
             echo "ERROR: Coverage report missing or empty at $REPORT_PATH"
             exit 1
@@ -129,7 +136,7 @@ jobs:
       - name: Check JaCoCo Report Size & Content
         shell: bash
         run: |
-          REPORT_PATH="target/jacoco-merged/jacoco.xml"
+          REPORT_PATH="target/site/jacoco-aggregate/jacoco.xml"
           echo "== Report Size =="
           ls -lh $REPORT_PATH || echo "Not found"
           echo "== First 10 lines =="
@@ -141,9 +148,10 @@ jobs:
       - name: Sanity check report
         shell: bash
         run: |
-          ls -lh target/jacoco-merged/jacoco.xml
-          head -n 10 target/jacoco-merged/jacoco.xml
-          grep -c "<counter" target/jacoco-merged/jacoco.xml
+          REPORT_PATH="target/site/jacoco-aggregate/jacoco.xml"
+          ls -lh $REPORT_PATH
+          head -n 10 $REPORT_PATH
+          grep -c "<counter" $REPORT_PATH
 
 
       - name: SonarCloud Scan
