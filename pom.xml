@@ -949,7 +949,7 @@ limitations under the License.
                 </suppressionFile>
               </suppressionFiles>
             </configuration>
-            
+
             <dependencies>
               <dependency>
                 <groupId>org.activiti</groupId>
