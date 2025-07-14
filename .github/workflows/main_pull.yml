@@ -97,6 +97,27 @@ jobs:
           find . -type f -name "*.class" | head -20
           echo "== Total .class files =="
           find . -type f -name "*.class" | wc -l
+      - name: Download Jacoco CLI
+        run: |
+          mkdir -p jacoco-cli
+          curl -L -o jacoco-cli/jacococli.jar https://repo1.maven.org/maven2/org/jacoco/org.jacoco.cli/0.8.11/org.jacoco.cli-0.8.11.jar
+
+      - name: Merge Jacoco exec files
+        run: |
+          mkdir -p target/jacoco-aggregate
+          find . -name jacoco-merged.exec > exec_files.txt
+          java -jar jacoco-cli/jacococli.jar merge $(cat exec_files.txt) --destfile target/jacoco-aggregate/jacoco-merged.exec
+
+      - name: Generate Jacoco XML Report
+        shell: bash
+        run: |
+          CLASSFILES=$(find . -type d -path "*/target/classes" | tr '\n' ' ')
+          SOURCEFILES=$(find . -type d -path "*/src/main/java" | tr '\n' ' ')
+
+          java -jar jacoco-cli/jacococli.jar report target/jacoco-aggregate/jacoco-merged.exec \
+            $(for dir in $CLASSFILES; do echo --classfiles $dir; done) \
+            $(for dir in $SOURCEFILES; do echo --sourcefiles $dir; done) \
+            --xml target/jacoco-aggregate/jacoco.xml
 
       - name: Confirm report generation
         shell: bash
