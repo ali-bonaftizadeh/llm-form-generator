@@ -90,6 +90,11 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Merge JaCoCo .exec files
+        shell: bash
+        run: |
+          mvn jacoco:merge -Djacoco.destFile=target/jacoco-merged/jacoco-merged.exec
+
       - name: Generate JaCoCo aggregate report (XML + HTML)
         shell: bash
         run: |
