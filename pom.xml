@@ -817,8 +817,8 @@ limitations under the License.
         <reportSets>
           <reportSet>
             <reports>
-              <!-- select non-aggregate reports
-              <report>report</report> -->
+              <!-- select non-aggregate reports -->
+              <report>report</report>
             </reports>
           </reportSet>
         </reportSets>

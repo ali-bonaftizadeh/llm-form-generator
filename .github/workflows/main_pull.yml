@@ -110,7 +110,7 @@ jobs:
         id: set_sonar_opts
         shell: bash
         run: |
-          REPORT_PATH="target/jacoco-merged/jacoco.xml"
+          REPORT_PATH="target/jacoco-aggregate/jacoco.xml"
           if [ ! -f "$REPORT_PATH" ] || ! grep -q "<counter" "$REPORT_PATH"; then
             echo "ERROR: Coverage report missing or empty at $REPORT_PATH"
             exit 1
@@ -127,7 +127,7 @@ jobs:
       - name: Check JaCoCo Report Size & Content
         shell: bash
         run: |
-          REPORT_PATH="target/jacoco-merged/jacoco.xml"
+          REPORT_PATH="target/jacoco-aggregate/jacoco.xml"
           echo "== Report Size =="
           ls -lh $REPORT_PATH || echo "Not found"
           echo "== First 10 lines =="
@@ -139,7 +139,7 @@ jobs:
       - name: Sanity check report
         shell: bash
         run: |
-          REPORT_PATH="target/jacoco-merged/jacoco.xml"
+          REPORT_PATH="target/jacoco-aggregate/jacoco.xml"
           ls -lh $REPORT_PATH
           head -n 10 $REPORT_PATH
           grep -c "<counter" $REPORT_PATH
