@@ -97,8 +97,6 @@ jobs:
           find . -type f -name "*.class" | head -20
           echo "== Total .class files =="
           find . -type f -name "*.class" | wc -l
-      - name: Check merged exec file
-        run: ls -lh target/jacoco-merged/jacoco-merged.exec || echo "No merged exec file found"
 
       - name: Confirm report generation
         shell: bash

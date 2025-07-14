@@ -714,13 +714,13 @@ limitations under the License.
             <goal>prepare-agent</goal>
           </goals>
         </execution>
-        <execution>
+        <!-- <execution>
           <id>post-unit-test</id>
           <phase>test</phase>
           <goals>
             <goal>report</goal>
           </goals>
-        </execution>
+        </execution> -->
 
         <!-- Integration Test Coverage -->
         <execution>
@@ -729,13 +729,13 @@ limitations under the License.
             <goal>prepare-agent-integration</goal>
           </goals>
         </execution>
-        <execution>
+        <!-- <execution>
           <id>post-integration-test</id>
           <phase>post-integration-test</phase>
           <goals>
             <goal>report-integration</goal>
           </goals>
-        </execution>
+        </execution> -->
 
         <!-- Merge all .exec files -->
         <execution>
@@ -747,14 +747,13 @@ limitations under the License.
           <configuration>
             <fileSets>
               <fileSet>
-                <directory>${project.basedir}</directory>
+                <directory>${project.build.directory}</directory>
                 <includes>
-                  <include>**/target/jacoco.exec</include>
-                  <include>**/target/jacoco-it.exec</include>
+                  <include>**/*.exec</include>
                 </includes>
               </fileSet>
             </fileSets>
-            <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
+            <destFile>${project.build.directory}/jacoco-merged/jacoco-merged.exec</destFile>
           </configuration>
         </execution>
 
@@ -766,7 +765,7 @@ limitations under the License.
             <goal>report</goal>
           </goals>
           <configuration>
-            <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+            <dataFile>${project.build.directory}/jacoco-merged/jacoco-merged.exec</dataFile>
             <outputDirectory>${project.build.directory}/jacoco-merged</outputDirectory>
             <sourceDirectories>
             <directory>${project.basedir}/src/main/java</directory>
