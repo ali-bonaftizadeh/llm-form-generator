@@ -90,6 +90,9 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+      - name: Generate Aggregate JaCoCo Report via Maven
+        run: |
+          mvn jacoco:report-aggregate -P integration-test
 
       - name: Debug-> Check for compiled .class files
         run: |
@@ -97,30 +100,6 @@ jobs:
           find . -type f -name "*.class" | head -20
           echo "== Total .class files =="
           find . -type f -name "*.class" | wc -l
-      - name: Download and Extract JaCoCo CLI
-        run: |
-          mkdir -p jacoco-cli
-          curl -L -o jacoco-cli/jacoco.zip https://repo1.maven.org/maven2/org/jacoco/jacoco/0.8.11/jacoco-0.8.11.zip
-          unzip -j jacoco-cli/jacoco.zip "jacoco-0.8.11/lib/jacococli.jar" -d jacoco-cli
-
-      - name: Merge JaCoCo exec files
-        run: |
-          mkdir -p target/jacoco-aggregate
-          find . -name jacoco-merged.exec > exec_files.txt
-          java -jar jacoco-cli/jacococli.jar merge $(cat exec_files.txt) --destfile target/jacoco-aggregate/jacoco-merged.exec
-
-
-      - name: Generate Jacoco XML Report
-        shell: bash
-        run: |
-          CLASSFILES=$(find . -type d -path "*/target/classes" | tr '\n' ' ')
-          SOURCEFILES=$(find . -type d -path "*/src/main/java" | tr '\n' ' ')
-
-          java -jar jacoco-cli/jacococli.jar report target/jacoco-aggregate/jacoco-merged.exec \
-            $(for dir in $CLASSFILES; do echo --classfiles $dir; done) \
-            $(for dir in $SOURCEFILES; do echo --sourcefiles $dir; done) \
-            --xml target/jacoco-aggregate/jacoco.xml
-
       - name: Confirm report generation
         shell: bash
         run: |
@@ -130,10 +109,9 @@ jobs:
           find . -name jacoco.xml -exec ls -lh {} \;
 
       - name: Set SONAR_SCANNER_OPTS
-        id: set_sonar_opts
         shell: bash
         run: |
-          REPORT_PATH="target/jacoco-aggregate/jacoco.xml"
+          REPORT_PATH="target/site/jacoco-aggregate/jacoco.xml"
           if [ ! -f "$REPORT_PATH" ] || ! grep -q "<counter" "$REPORT_PATH"; then
             echo "ERROR: Coverage report missing or empty at $REPORT_PATH"
             exit 1
@@ -145,29 +123,18 @@ jobs:
             -Dsonar.organization=activiti \
             -Dsonar.projectKey=Activiti_Activiti \
             -Dsonar.coverage.jacoco.xmlReportPaths=$REPORT_PATH" >> $GITHUB_ENV
-          echo "report_path=$REPORT_PATH" >> $GITHUB_OUTPUT
+
 
       - name: Check JaCoCo Report Size & Content
         shell: bash
         run: |
-          REPORT_PATH="target/jacoco-aggregate/jacoco.xml"
+          REPORT_PATH="target/site/jacoco-aggregate/jacoco.xml"
           echo "== Report Size =="
           ls -lh $REPORT_PATH || echo "Not found"
           echo "== First 10 lines =="
           head -n 10 $REPORT_PATH || echo "Not readable"
           echo "== <counter> tags found =="
           grep -c "<counter" $REPORT_PATH || echo "No counters found"
-
-
-      - name: Sanity check report
-        shell: bash
-        run: |
-          REPORT_PATH="target/jacoco-aggregate/jacoco.xml"
-          ls -lh $REPORT_PATH
-          head -n 10 $REPORT_PATH
-          grep -c "<counter" $REPORT_PATH
-
-
       - name: SonarCloud Scan
         run: mvn ${{ env.SONAR_SCANNER_OPTS }}
         env:
