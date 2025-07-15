@@ -18,10 +18,10 @@ import org.activiti.bpmn.converter.DeleteMe;
 import org.junit.Test;
 import static org.junit.Assert.assertEquals;
 
-public class DeleteMeExternalUT {
+public class DeleteMeExternalIT {
     @Test
-    public void testCoveredUTExternally() {
+    public void testCoveredITExternally() {
         DeleteMe deleteMe = new DeleteMe();
-        assertEquals("This line is covered by unit tests from an external module", deleteMe.coveredUTExternally());
+        assertEquals("This line is covered by unit tests from an external module", deleteMe.coveredITExternally());
     }
 }
