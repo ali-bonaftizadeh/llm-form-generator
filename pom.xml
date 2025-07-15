@@ -774,7 +774,7 @@ limitations under the License.
 
               <fileSets>
                 <fileSet>
-                  <directory>${basedir}</directory>
+                  <directory>${project.basedir}</directory>
                   <includes>
                     <include>**/target/classes</include>
                   </includes>
@@ -782,7 +782,7 @@ limitations under the License.
               </fileSets>
 
               <sourceDirectories>
-                <sourceDirectory>${basedir}</sourceDirectory>
+                <sourceDirectory>${project.basedir}</sourceDirectory>
                 <includes>
                   <include>**/src/main/java</include>
                 </includes>
