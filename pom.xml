@@ -753,7 +753,8 @@ limitations under the License.
                 <fileSet>
                   <directory>${project.basedir}</directory>
                   <includes>
-                    <include>**/target/*.exec</include>
+                    <include>**/target/jacoco.exec</include>
+                    <include>**/target/jacoco-it.exec</include>
                   </includes>
                 </fileSet>
               </fileSets>
