@@ -88,13 +88,13 @@ jobs:
       - name: Set SONAR_SCANNER_OPTS
         shell: bash
         run: |
-          echo "JACOCO_REPORT_PATH=${{ github.workspace }}/activiti-coverage/target/site/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
+          echo "JACOCO_REPORT_PATH=${{ github.workspace }}/target/site/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
 
           SONAR_OPTS="sonar:sonar \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.organization=activiti \
             -Dsonar.projectKey=Activiti_Activiti \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/activiti-coverage/target/site/jacoco-aggregate/jacoco.xml \
+            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/target/site/jacoco-aggregate/jacoco.xml \
             -Dsonar.login=${{ secrets.SONAR_TOKEN }}"
 
           echo "SONAR_SCANNER_OPTS=$SONAR_OPTS" >> $GITHUB_ENV
