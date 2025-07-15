@@ -22,6 +22,6 @@ public class DeleteMeExternalIT {
     @Test
     public void testCoveredITExternally() {
         DeleteMe deleteMe = new DeleteMe();
-        assertEquals("This line is covered by unit tests from an external module", deleteMe.coveredITExternally());
+        assertEquals("This line is covered by Integration tests from an external module", deleteMe.coveredITExternally());
     }
 }
