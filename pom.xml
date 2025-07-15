@@ -712,7 +712,7 @@ limitations under the License.
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco-maven-plugin.version}</version>
         <executions>
-          <!-- Unit Test Configuration -->
+          <!-- Unit tests configuration-->
           <execution>
             <id>pre-unit-test</id>
             <goals>
@@ -726,7 +726,7 @@ limitations under the License.
               <goal>report</goal>
             </goals>
           </execution>
-          <!-- Integration Test Configuration -->
+          <!-- Integration tests configuration-->
           <execution>
             <id>pre-integration-test</id>
             <phase>pre-integration-test</phase>
