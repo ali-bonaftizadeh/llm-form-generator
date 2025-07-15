@@ -771,31 +771,21 @@ limitations under the License.
             <configuration>
               <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
               <outputDirectory>${project.reporting.outputDirectory}/jacoco-aggregate</outputDirectory>
-              <fileSet>
-                <directory>${basedir}/../activiti-api/target/classes</directory>
-              </fileSet>
-              <fileSet>
-                <directory>${basedir}/../activiti-core-common/target/classes</directory>
-              </fileSet>
-              <fileSet>
-                <directory>${basedir}/../activiti-core/target/classes</directory>
-              </fileSet>
-              <fileSet>
-                <directory>${basedir}/../activiti-dependencies/target/classes</directory>
-              </fileSet>
-              <fileSet>
-                <directory>${basedir}/../activiti-examples/target/classes</directory>
-              </fileSet>
-              <fileSet>
-                <directory>${basedir}/../activiti-dependency-check/target/classes</directory>
-              </fileSet>
+
+              <fileSets>
+                <fileSet>
+                  <directory>${basedir}</directory>
+                  <includes>
+                    <include>**/target/classes</include>
+                  </includes>
+                </fileSet>
+              </fileSets>
+
               <sourceDirectories>
-                <sourceDirectory>${basedir}/../activiti-api/src/main/java</sourceDirectory>
-                <sourceDirectory>${basedir}/../activiti-core-common/src/main/java</sourceDirectory>
-                <sourceDirectory>${basedir}/../activiti-core/src/main/java</sourceDirectory>
-                <sourceDirectory>${basedir}/../activiti-dependencies/src/main/java</sourceDirectory>
-                <sourceDirectory>${basedir}/../activiti-examples/src/main/java</sourceDirectory>
-                <sourceDirectory>${basedir}/../activiti-dependency-check/src/main/java</sourceDirectory>
+                <sourceDirectory>${basedir}</sourceDirectory>
+                <includes>
+                  <include>**/src/main/java</include>
+                </includes>
               </sourceDirectories>
             </configuration>
           </execution>
