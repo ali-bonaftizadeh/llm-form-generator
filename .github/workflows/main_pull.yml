@@ -88,7 +88,8 @@ jobs:
       - name: Set SONAR_SCANNER_OPTS
         shell: bash
         run: |
-          echo "JACOCO_REPORT_PATH=${{ github.workspace }}/activiti-coverage/target/site/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
+          REPORT_PATH="${{ github.workspace }}/activiti-coverage/target/site/jacoco-aggregate/jacoco.xml"
+          
           echo "SONAR_SCANNER_OPTS=sonar:sonar \
           -Dsonar.projectKey=Activiti_Activiti \
           -Dsonar.organization=activiti \
