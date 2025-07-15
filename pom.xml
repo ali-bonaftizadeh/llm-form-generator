@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.activiti</groupId>
   <artifactId>activiti-parent</artifactId>
@@ -359,12 +359,9 @@ limitations under the License.
                 <excludedScopes>provided,test</excludedScopes>
                 <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti|org\.gytheio).*</excludedGroups>
                 <failIfWarning>true</failIfWarning>
-                <includedLicenses>
-                  https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicensesPlusNashorn.txt</includedLicenses>
-                <licenseMergesUrl>
-                  https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/licenseMerges.txt</licenseMergesUrl>
-                <overrideUrl>
-                  https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/override-THIRD-PARTY.properties</overrideUrl>
+                <includedLicenses>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicensesPlusNashorn.txt</includedLicenses>
+                <licenseMergesUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/licenseMerges.txt</licenseMergesUrl>
+                <overrideUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/override-THIRD-PARTY.properties</overrideUrl>
               </configuration>
             </execution>
           </executions>
@@ -413,30 +410,29 @@ limitations under the License.
                   <module name="Checker">
                     <!-- Checks for whitespace. -->
                     <module name="FileTabCharacter">
-                      <property name="severity" value="error" />
-                      <property name="eachLine" value="true" />
+                      <property name="severity" value="error"/>
+                      <property name="eachLine" value="true"/>
                     </module>
                     <module name="TreeWalker">
-                      <!-- Import settings: getting rid of redundant import, forbid star notation,
-                      defined order of imports. -->
-                      <module name="RedundantImport" />
+                      <!-- Import settings: getting rid of redundant import, forbid star notation, defined order of imports. -->
+                      <module name="RedundantImport"/>
                       <module name="AvoidStarImport">
                         <property name="excludes"
-                          value="org.junit.Assert,org.assertj.core.api.Assertions,org.mockito.Mockito" />
-                        <property name="allowClassImports" value="false" />
-                        <property name="allowStaticMemberImports" value="false" />
+                                  value="org.junit.Assert,org.assertj.core.api.Assertions,org.mockito.Mockito"/>
+                        <property name="allowClassImports" value="false"/>
+                        <property name="allowStaticMemberImports" value="false"/>
                       </module>
                       <module name="CustomImportOrder">
                         <property name="customImportOrderRules"
-                          value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###STATIC" />
-                        <property name="sortImportsInGroupAlphabetically" value="true" />
-                        <property name="separateLineBetweenGroups" value="true" />
+                                  value="STANDARD_JAVA_PACKAGE###THIRD_PARTY_PACKAGE###STATIC"/>
+                        <property name="sortImportsInGroupAlphabetically" value="true"/>
+                        <property name="separateLineBetweenGroups" value="true"/>
                       </module>
                       <module name="NeedBraces">
                         <property name="tokens"
-                          value="LITERAL_IF, LITERAL_ELSE, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO" />
+                                  value="LITERAL_IF, LITERAL_ELSE, LITERAL_FOR, LITERAL_WHILE, LITERAL_DO"/>
                       </module>
-                      <module name="EqualsHashCode" />
+                      <module name="EqualsHashCode"/>
                     </module>
                   </module>
                 </checkstyleRules>
@@ -646,14 +642,11 @@ limitations under the License.
                 <bannedDependencies>
                   <excludes combine.children="append">
                     <!-- Ban blacklisted logging deps (we only use SLF4J + Logback) -->
-                    <!-- In case of transitive dependency, exclude it and use
-                    'org.slf4j:jcl-over-slf4j' instead -->
+                    <!-- In case of transitive dependency, exclude it and use 'org.slf4j:jcl-over-slf4j' instead -->
                     <exclude>commons-logging:commons-log*</exclude>
-                    <!-- In case of transitive dependency, exclude it and use
-                    'org.slf4j:log4j-over-slf4j' instead -->
+                    <!-- In case of transitive dependency, exclude it and use 'org.slf4j:log4j-over-slf4j' instead -->
                     <exclude>log4j:log4j</exclude>
-                    <!-- In case of transitive dependency, exclude it and use
-                    'org.javassist:javassist' instead -->
+                    <!-- In case of transitive dependency, exclude it and use 'org.javassist:javassist' instead -->
                     <exclude>javassist:javassist</exclude>
                     <!-- Replaced by commons-lang3 -->
                     <exclude>commons-lang:commons-lang:*:jar:compile</exclude>
@@ -666,10 +659,8 @@ limitations under the License.
           </execution>
           <execution>
             <id>ban-duplicated-classes</id>
-            <!-- Using phase=none as we don't want this execution as part of the default build. The
-            phase
-                 is specified in the "full" profile and thus the execution will only be activated when using that
-            profile. -->
+            <!-- Using phase=none as we don't want this execution as part of the default build. The phase
+                 is specified in the "full" profile and thus the execution will only be activated when using that profile. -->
             <phase>none</phase>
             <goals>
               <goal>enforce</goal>
@@ -678,20 +669,17 @@ limitations under the License.
               <rules>
                 <banDuplicateClasses>
                   <ignoreClasses>
-                    <!-- Servlet API is bundled in way too many different dependencies, causing
-                    nightmares trying to
+                    <!-- Servlet API is bundled in way too many different dependencies, causing nightmares trying to
                          properly exclude everything. There were no real issues with this so far as mostly the APIs
                          are just duplicates of the exactly same sources. In ideal world, this get eventually fixed,
                          but it may very well not be worth the effort. -->
                     <ignoreClass>jakarta.servlet.*</ignoreClass>
-                    <!-- Classes in jakarta.annotation package are just marker annotations used to
-                    aid the programmers.
+                    <!-- Classes in jakarta.annotation package are just marker annotations used to aid the programmers.
                          These annotations do not influence the actual behavior of the code, so it's reasonable to
                          ignore them. Following dependencies contain these classes: 'com.google.code.findbugs:jsr305'
                          and 'com.google.code.findbugs:annotations'. -->
                     <ignoreClass>jakarta.annotation.*</ignoreClass>
-                    <!-- Exactly the same case as for above 'jakarta.annotation.*' classes.
-                    Following dependencies contain
+                    <!-- Exactly the same case as for above 'jakarta.annotation.*' classes. Following dependencies contain
                          these classes: 'net.jcip:jcip-annotations' and 'com.google.code.findbugs:annotations'. -->
                     <ignoreClass>net.jcip.annotations.*</ignoreClass>
                   </ignoreClasses>
@@ -761,15 +749,15 @@ limitations under the License.
               <goal>merge</goal>
             </goals>
             <configuration>
-              <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
-              <files>
-                <file>${basedir}/../activiti-api/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-core-common/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-core/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-dependencies/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-examples/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-dependency-check/target/jacoco.exec</file>
-              </files>
+              <fileSets>
+                <fileSet>
+                  <directory>${project.basedir}</directory>
+                  <includes>
+                    <include>**/target/*.exec</include>
+                  </includes>
+                </fileSet>
+              </fileSets>
+              <file>${project.build.directory}/jacoco-merged.exec</file>
             </configuration>
           </execution>
           <!-- Aggregate Report -->
@@ -780,15 +768,34 @@ limitations under the License.
               <goal>report-aggregate</goal>
             </goals>
             <configuration>
-              <destFile>${project.build.directory}/jacoco-merged.exec</destFile>
-              <files>
-                <file>${basedir}/../activiti-api/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-core-common/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-core/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-dependencies/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-examples/target/jacoco.exec</file>
-                <file>${basedir}/../activiti-dependency-check/target/jacoco.exec</file>
-              </files>
+              <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+              <outputDirectory>${project.reporting.outputDirectory}/jacoco-aggregate</outputDirectory>
+              <fileSet>
+                <directory>${basedir}/../activiti-api/target/classes</directory>
+              </fileSet>
+              <fileSet>
+                <directory>${basedir}/../activiti-core-common/target/classes</directory>
+              </fileSet>
+              <fileSet>
+                <directory>${basedir}/../activiti-core/target/classes</directory>
+              </fileSet>
+              <fileSet>
+                <directory>${basedir}/../activiti-dependencies/target/classes</directory>
+              </fileSet>
+              <fileSet>
+                <directory>${basedir}/../activiti-examples/target/classes</directory>
+              </fileSet>
+              <fileSet>
+                <directory>${basedir}/../activiti-dependency-check/target/classes</directory>
+              </fileSet>
+              <sourceDirectories>
+                <sourceDirectory>${basedir}/../activiti-api/src/main/java</sourceDirectory>
+                <sourceDirectory>${basedir}/../activiti-core-common/src/main/java</sourceDirectory>
+                <sourceDirectory>${basedir}/../activiti-core/src/main/java</sourceDirectory>
+                <sourceDirectory>${basedir}/../activiti-dependencies/src/main/java</sourceDirectory>
+                <sourceDirectory>${basedir}/../activiti-examples/src/main/java</sourceDirectory>
+                <sourceDirectory>${basedir}/../activiti-dependency-check/src/main/java</sourceDirectory>
+              </sourceDirectories>
             </configuration>
           </execution>
         </executions>
