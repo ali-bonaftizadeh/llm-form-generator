@@ -712,85 +712,85 @@ limitations under the License.
         <artifactId>jacoco-maven-plugin</artifactId>
         <version>${jacoco-maven-plugin.version}</version>
         <executions>
-          <!-- Unit tests configuration-->
-          <execution>
-            <id>pre-unit-test</id>
-            <goals>
-              <goal>prepare-agent</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>post-unit-test</id>
-            <phase>test</phase>
-            <goals>
-              <goal>report</goal>
-            </goals>
-          </execution>
-          <!-- Integration tests configuration-->
-          <execution>
-            <id>pre-integration-test</id>
-            <phase>pre-integration-test</phase>
-            <goals>
-              <goal>prepare-agent-integration</goal>
-            </goals>
-          </execution>
-          <execution>
-            <id>post-integration-test</id>
-            <phase>post-integration-test</phase>
-            <goals>
-              <goal>report-integration</goal>
-            </goals>
-          </execution>
-          <!-- Merge Coverage -->
-          <execution>
-            <id>jacoco-merge</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>merge</goal>
-            </goals>
-            <configuration>
-              <fileSets>
-                <fileSet>
-                  <directory>${project.basedir}</directory>
-                  <includes>
-                    <include>**/target/jacoco.exec</include>
-                    <include>**/target/jacoco-it.exec</include>
-                  </includes>
-                </fileSet>
-              </fileSets>
-              <file>${project.build.directory}/jacoco-merged.exec</file>
-            </configuration>
-          </execution>
-          <!-- Aggregate Report -->
-          <execution>
-            <id>jacoco-report-aggregate</id>
-            <phase>verify</phase>
-            <goals>
-              <goal>report-aggregate</goal>
-            </goals>
-            <configuration>
-              <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
-              <outputDirectory>${project.reporting.outputDirectory}/jacoco-aggregate</outputDirectory>
-
-              <fileSets>
-                <fileSet>
-                  <directory>${project.basedir}</directory>
-                  <includes>
-                    <include>**/target/classes</include>
-                  </includes>
-                </fileSet>
-              </fileSets>
-
-              <sourceDirectories>
-                <sourceDirectory>${project.basedir}</sourceDirectory>
-                <includes>
-                  <include>**/src/main/java</include>
-                </includes>
-              </sourceDirectories>
-            </configuration>
-          </execution>
+            <!-- Unit Test Configuration -->
+            <execution>
+                <id>pre-unit-test</id>
+                <goals>
+                  <goal>prepare-agent</goal>
+                </goals>
+            </execution>
+            <execution>
+                <id>post-unit-test</id>
+                <phase>test</phase>
+                <goals>
+                    <goal>report</goal>
+                </goals>
+            </execution>
+            <!-- Integration Test Configuration -->
+            <execution>
+                <id>pre-integration-test</id>
+                <phase>pre-integration-test</phase>
+                <goals>
+                  <goal>prepare-agent-integration</goal>
+                </goals>
+            </execution>
+            <execution>
+                <id>post-integration-test</id>
+                <phase>post-integration-test</phase>
+                <goals>
+                    <goal>report-integration</goal>
+                </goals>
+            </execution>
+            <!-- Merge Coverage -->
+            <execution>
+                <id>jacoco-merge</id>
+                <phase>verify</phase>
+                <goals>
+                    <goal>merge</goal>
+                </goals>
+                <configuration>
+                    <fileSets>
+                        <fileSet>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>**/target/*.exec</include>
+                            </includes>
+                        </fileSet>
+                    </fileSets>
+                    <file>${project.build.directory}/jacoco-merged.exec</file>
+                </configuration>
+            </execution>
+            <!-- Aggregate Report -->
+            <execution>
+                <id>jacoco-report-aggregate</id>
+                <phase>verify</phase>
+                <goals>
+                    <goal>report-aggregate</goal>
+                </goals>
+                <configuration>
+                    <dataFile>${project.build.directory}/jacoco-merged.exec</dataFile>
+                    <outputDirectory>${project.reporting.outputDirectory}/jacoco-aggregate</outputDirectory>
+                    <classDirectories>
+                        <fileSet>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>**/*.class</include>
+                            </includes>
+                        </fileSet>
+                    </classDirectories>
+                    <sourceDirectories>
+                        <fileSet>
+                            <directory>${project.basedir}</directory>
+                            <includes>
+                                <include>src/main/java</include>
+                                <include>src/test/java</include>
+                            </includes>
+                        </fileSet>
+                    </sourceDirectories>
+                </configuration>
+            </execution>
         </executions>
-      </plugin>
+    </plugin>
     </plugins>
   </build>
   <reporting>
@@ -997,6 +997,7 @@ limitations under the License.
                 </suppressionFile>
               </suppressionFiles>
             </configuration>
+
             <dependencies>
               <dependency>
                 <groupId>org.activiti</groupId>
