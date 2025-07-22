@@ -204,7 +204,7 @@
     <extra-enforcer-rules.version>1.9.0</extra-enforcer-rules.version>
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
     <license-maven-plugin.version>5.0.0</license-maven-plugin.version>
-    <third-party-license-maven-plugin.version>2.5.0</third-party-license-maven-plugin.version>
+    <third-party-license-maven-plugin.version>2.6.0</third-party-license-maven-plugin.version>
     <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
     <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
@@ -955,6 +955,37 @@ limitations under the License.
                 <goals>
                   <goal>check</goal>
                 </goals>
+              </execution>
+            </executions>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+    <!-- profile to check licenses -->
+    <profile>
+      <id>license-check</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.codehaus.mojo</groupId>
+            <artifactId>license-maven-plugin</artifactId>
+            <version>${third-party-license-maven-plugin.version}</version>
+            <executions>
+              <execution>
+                <id>third-party-licenses</id>
+                <goals>
+                  <goal>add-third-party</goal>
+                </goals>
+                <phase>verify</phase>
+                <configuration>
+                  <failOnMissing>true</failOnMissing>
+                  <excludedScopes>provided,test</excludedScopes>
+                  <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti|org\.gytheio).*</excludedGroups>
+                  <failIfWarning>true</failIfWarning>
+                  <includedLicenses>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicensesPlusNashorn.txt</includedLicenses>
+                  <licenseMergesUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/licenseMerges.txt</licenseMergesUrl>
+                  <overrideUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/override-THIRD-PARTY.properties</overrideUrl>
+                </configuration>
               </execution>
             </executions>
           </plugin>
