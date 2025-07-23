@@ -204,12 +204,12 @@
     <extra-enforcer-rules.version>1.9.0</extra-enforcer-rules.version>
     <jacoco-maven-plugin.version>0.8.12</jacoco-maven-plugin.version>
     <license-maven-plugin.version>5.0.0</license-maven-plugin.version>
-    <third-party-license-maven-plugin.version>2.6.0</third-party-license-maven-plugin.version>
+    <third-party-license-maven-plugin.version>2.5.0</third-party-license-maven-plugin.version>
     <maven-checkstyle-plugin.version>3.3.1</maven-checkstyle-plugin.version>
     <maven-clean-plugin.version>3.5.0</maven-clean-plugin.version>
     <maven-compiler-plugin.version>3.14.0</maven-compiler-plugin.version>
     <maven-deploy-plugin.version>3.1.4</maven-deploy-plugin.version>
-    <maven-enforcer-plugin.version>3.6.1</maven-enforcer-plugin.version>
+    <maven-enforcer-plugin.version>3.5.0</maven-enforcer-plugin.version>
     <maven-failsafe-plugin.version>3.5.3</maven-failsafe-plugin.version>
     <maven-gpg-plugin.version>3.2.7</maven-gpg-plugin.version>
     <maven-install-plugin.version>3.1.4</maven-install-plugin.version>
@@ -252,7 +252,7 @@
       <dependency>
         <groupId>org.springframework.security</groupId>
         <artifactId>spring-security-core</artifactId>
-        <version>6.5.1</version>
+        <version>6.4.5</version>
       </dependency>
       <!-- temporary security fix -->
       <!-- temporary security fix AAE-35515-->
@@ -351,9 +351,9 @@ limitations under the License.
                 <excludedScopes>provided,test</excludedScopes>
                 <excludedGroups>^(org\.alfresco|com\.alfresco|org\.activiti|org\.gytheio).*</excludedGroups>
                 <failIfWarning>true</failIfWarning>
-                <includedLicenses>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/includedLicensesPlusNashorn.txt</includedLicenses>
-                <licenseMergesUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/licenseMerges.txt</licenseMergesUrl>
-                <overrideUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/master/override-THIRD-PARTY.properties</overrideUrl>
+                <includedLicenses>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/refs/heads/fix/AAE-36818-Upgrading-Nashorn-Version-to-15.6/includedLicensesPlusNashorn.txt</includedLicenses>
+                <licenseMergesUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/refs/heads/fix/AAE-36818-Upgrading-Nashorn-Version-to-15.6/licenseMerges.txt</licenseMergesUrl>
+                <overrideUrl>https://raw.githubusercontent.com/Alfresco/third-party-license-overrides/refs/heads/fix/AAE-36818-Upgrading-Nashorn-Version-to-15.6/override-THIRD-PARTY.properties</overrideUrl>
               </configuration>
             </execution>
           </executions>
