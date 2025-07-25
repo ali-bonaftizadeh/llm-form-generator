@@ -89,15 +89,7 @@ jobs:
         shell: bash
         run: |
           echo "JACOCO_REPORT_PATH=${{ github.workspace }}/activiti-coverage/target/site/jacoco-aggregate/jacoco.xml" >> $GITHUB_ENV
-
-          SONAR_OPTS="sonar:sonar \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.organization=activiti \
-            -Dsonar.projectKey=Activiti_Activiti \
-            -Dsonar.coverage.jacoco.xmlReportPaths=${{ github.workspace }}/activiti-coverage/target/site/jacoco-aggregate/jacoco.xml \
-            -Dsonar.login=${{ secrets.SONAR_TOKEN }}"
-
-          echo "SONAR_SCANNER_OPTS=$SONAR_OPTS" >> $GITHUB_ENV
+          echo "SONAR_SCANNER_OPTS=sonar:sonar -Dsonar.host.url='https://sonarcloud.io' -Dsonar.organization='activiti' -Dsonar.projectKey='Activiti_Activiti' -Dsonar.coverage.jacoco.xmlReportPaths=${{ env.JACOCO_REPORT_PATH }}" >> $GITHUB_ENV
 
       - name: Build and Test with Maven (and maybe Deploy)
         shell: bash
@@ -107,16 +99,7 @@ jobs:
           MAVEN_USERNAME: ${{ secrets.NEXUS_USERNAME }}
           MAVEN_PASSWORD: ${{ secrets.NEXUS_PASSWORD }}
           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-      - name: Check for generated .exec files
-        run: |
-          echo "Looking for jacoco.exec and jacoco-it.exec files..."
-          find . -name "*.exec" || echo "No .exec files found!"
-
-      - name: Check for generated jacoco.xml
-        run: |
-          echo "Looking for jacoco.xml files..."
-          find . -name "jacoco.xml" || echo "No jacoco.xml files found!"
-
 
       - name: Echo Longest Test Run
         uses: ./.github/actions/echo-longest-run
+

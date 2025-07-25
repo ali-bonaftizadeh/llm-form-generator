@@ -15,13 +15,13 @@
  */
 package org.activiti.engine.test;
 import org.activiti.bpmn.converter.DeleteMe;
-import org.junit.Test;
 import static org.junit.Assert.assertEquals;
+import org.junit.Test;
 
 public class DeleteMeExternalIT {
     @Test
     public void testCoveredITExternally() {
         DeleteMe deleteMe = new DeleteMe();
-        assertEquals("This line is covered by unit tests from an external module", deleteMe.coveredITExternally());
+        assertEquals("This line is covered by Integration tests from an external module", deleteMe.coveredITExternally());
     }
 }
