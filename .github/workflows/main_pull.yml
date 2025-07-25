@@ -102,4 +102,3 @@ jobs:
 
       - name: Echo Longest Test Run
         uses: ./.github/actions/echo-longest-run
-
