@@ -114,6 +114,12 @@
     <div id="main" class="wrapper full clearfix" ng-view="" ng-cloak ng-style="{height: window.height + 'px'}">
     </div>
 
+    <div style="position: fixed; bottom: 20px; right: 20px; z-index: 9999;">
+        <button class="btn btn-primary" ng-click="showPromptModal = true">
+            Open Prompt
+        </button>
+    </div>
+
 <!--[if lt IE 9]>
 <script src="../libs/es5-shim-15.3.4.5/es5-shim.js"></script>
 <script src="../libs/json3_3.2.6/lib/json3.min.js"></script>
@@ -256,6 +262,42 @@
 
 <!-- Integration extensions -->
 <script src="../scripts/resource-loader.js?v=2" app="editor"></script>
+
+<!-- Prompt Modal -->
+<div class="modal fade in" tabindex="-1" role="dialog" ng-show="showPromptModal"
+     style="display: block; background: rgba(0,0,0,0.5);">
+    <div class="modal-dialog" role="document" style="margin-top: 100px;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" ng-click="showPromptModal = false">&times;</button>
+                <h4 class="modal-title">Enter Prompt</h4>
+            </div>
+            <div class="modal-body">
+                <textarea class="form-control" rows="5" ng-model="llmPromptText"
+                          placeholder="Type your prompt here..."></textarea>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-default" ng-click="showPromptModal = false">Cancel</button>
+                <button class="btn btn-primary" ng-click="submitPrompt()">Submit</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    angular.module('activitiModeler')
+        .run(['$rootScope', function ($rootScope) {
+            $rootScope.showPromptModal = false;
+            $rootScope.llmPromptText = '';
+
+            $rootScope.submitPrompt = function () {
+                alert('Prompt submitted: ' + $rootScope.llmPromptText);
+                $rootScope.showPromptModal = false;
+
+                // TODO: Replace with actual LLM call or backend integration
+            };
+        }]);
+</script>
 
 </body>
 </html>
