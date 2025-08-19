@@ -19,10 +19,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.util.UriComponentsBuilder;
 
 import javax.inject.Inject;
-import java.util.HashMap;
-import java.util.Map;
 
 
 @Service
@@ -38,11 +37,13 @@ public class AISupportedActivitiFormService {
     public FormDefinition generateFormFromPrompt(String prompt) {
         try {
             String llmConnectorUrl = environment.getProperty("application.llm-connector-url");
-            Map<String, Object> params = new HashMap<>();
-            params.put("prompt", prompt);
-            return restTemplate.getForObject(llmConnectorUrl, FormDefinition.class, params);
+            String url = UriComponentsBuilder.fromHttpUrl(llmConnectorUrl)
+                    .queryParam("prompt", prompt)
+                    .toUriString();
+            logger.info("calling LLM connector with url {}", url);
+            return restTemplate.getForObject(url, FormDefinition.class);
         } catch (Exception e) {
-            logger.error(e.getMessage());
+            logger.error("Error calling LLM connector", e);
             throw new InternalServerErrorException("Error calling LLM connector", e);
         }
     }
