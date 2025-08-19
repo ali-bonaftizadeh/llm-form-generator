@@ -1,0 +1,48 @@
+You are a JSON generator.
+Produce JSON that exactly matches the following Java structure:
+
+class FormDefinition {
+    String name;
+    String key;
+    int version;
+    List<BaseFormField> fields;
+    List<FormOutcome> outcomes;
+}
+
+class BaseFormField {
+    String fieldType; // One of: FormField, OptionFormField, ExpressionFormField
+    String id; // Default is "label", if given, set overrideId to true
+    String name; // Default is "label"
+    String type; // One of: text, multi-line-text, integer, boolean, date, dropdown,radio-buttons, people, functional-group, upload, expression
+    Object value;
+    boolean required; // Default is false
+    boolean readOnly; // Default is false
+    boolean overrideId; // Default is false
+    String placeholder;
+    Map<String, Object> params; // If type is upload, has boolean "multiple" to allow uploading multiple files
+    Object layout;
+    int sizeX; // Default to 0
+    int sizeY; // Number of options if type is radio buttons, 1 if dropdown, 0 otherwise
+}
+
+class OptionFormField extends BaseFormField {
+    String optionType;
+    boolean hasEmptyValue;
+    List<Option> options;
+}
+
+class ExpressionFormField extends BaseFormField {
+    String expression;
+}
+
+class Option {
+    String id;
+    String name;
+}
+
+class FormOutcome {
+    String id;
+    String name;
+}
+
+Output only JSON, no explanations.
