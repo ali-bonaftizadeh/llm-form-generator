@@ -1,0 +1,28 @@
+<div class="modal" ng-controller="PromptModalCtrl">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h2>AI Prompt</h2>
+            </div>
+
+            <div class="modal-body">
+        <textarea class="form-control"
+                  rows="6"
+                  ng-model="prompt.text"
+                  placeholder="Type your prompt here..."></textarea>
+            </div>
+
+            <div class="modal-footer">
+                <div class="pull-right">
+                    <button class="btn btn-default" ng-click="cancel()">Cancel</button>
+                    <button class="btn btn-primary" ng-click="submit()">Submit</button>
+                </div>
+                <div class="loading pull-right" ng-show="loading">
+                    <div class="l1"></div><div class="l2"></div><div class="l2"></div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>

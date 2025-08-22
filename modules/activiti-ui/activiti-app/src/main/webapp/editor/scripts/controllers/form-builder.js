@@ -38,6 +38,13 @@ angular.module('activitiModeler')
                 }
             });
 
+            $scope.openPrompt = function () {
+                _internalCreateModal({
+                    template: 'editor-app/popups/prompt-modal.html', // you’ll need to create this file
+                    scope: $scope
+                }, $modal, $scope);
+            };
+
             // tabs for tab-control. NOT using templates for the tabs, we control the view
             // ourselves, based on the active tab binding
             $scope.tabs = [
@@ -52,9 +59,9 @@ angular.module('activitiModeler')
             ];
 
             $scope.form = {
-            	name: '', 
+            	name: '',
             	key: '',
-            	description: '', 
+            	description: '',
             	version: 1
            	};
 
@@ -78,7 +85,7 @@ angular.module('activitiModeler')
             var lastDropArrayTarget = null;
 
             $scope.onFieldMoved = function (field, fieldArraySource) {
-            	
+
             };
 
 
@@ -112,10 +119,10 @@ angular.module('activitiModeler')
 
                 var fieldId = paletteElementOrField.type;
                 var fieldType;
-                
+
                 if (fieldId === 'radio-buttons' || fieldId === 'dropdown') {
                     fieldType = 'OptionFormField';
-                    
+
                 } else if (fieldId === 'expression') {
                     fieldType = 'ExpressionFormField';
                 }
@@ -130,7 +137,7 @@ angular.module('activitiModeler')
                 setFieldDragDropAttributes(field, 'newField');
 
                 if (fieldId === 'radio-buttons') {
-                    field.options = [{ 
+                    field.options = [{
                     	name: $translate.instant('FORM-BUILDER.COMPONENT.RADIO-BUTTON-DEFAULT')
                     }];
                 }
@@ -142,7 +149,7 @@ angular.module('activitiModeler')
                     field.value = field.options[0];
                     field.hasEmptyValue = true;
                 }
-                
+
                 return field;
             };
 
@@ -191,7 +198,7 @@ angular.module('activitiModeler')
                             // after next digest cycle, to prevent first false-positive
                             $scope.formLoaded = true;
                         }, 200);
-                        
+
                     }).
                     error(function (response, status, headers, config) {
                         $scope.model.loading = false;
@@ -312,3 +319,32 @@ angular.module('activitiModeler')
             }
 
         }]);
+
+angular.module('activitiModeler')
+    .controller('PromptModalCtrl', ['$scope', '$http',
+        function ($scope, $http) {
+            console.log("close:", $scope.$close, "dismiss:", $scope.$dismiss);
+
+            $scope.prompt = { text: '' };
+            $scope.loading = false;
+
+            $scope.cancel = function () {
+                $scope.$dismiss();   // ✅ works with Activiti’s modal wrapper
+            };
+
+            $scope.submit = function () {
+                $scope.loading = true;
+                $http.post('/api/ai/prompt', { prompt: $scope.prompt.text })
+                    .then(function (response) {
+                        $scope.$close(response.data);   // ✅ return data to FormBuilderController
+                    })
+                    .catch(function (err) {
+                        alert("Something went wrong while generating the form.");
+                        console.error(err);
+                    })
+                    .finally(function () {
+                        $scope.loading = false;
+                    });
+            };
+        }
+    ]);

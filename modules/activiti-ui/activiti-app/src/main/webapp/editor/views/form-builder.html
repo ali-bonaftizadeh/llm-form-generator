@@ -15,6 +15,11 @@
 
                     <div ng-switch-when="separator" ng-class="item.cssClass"></div>
                 </button>
+
+                <!-- ✅ New Open Prompt button -->
+                <button class="btn btn-primary" ng-click="openPrompt()" title="Open AI Prompt">
+                    <i class="fa fa-magic"></i> Open Prompt
+                </button>
             </div>
         </div>
         <div class="btn-group pull-right" ng-show="!secondaryItems.length">
