@@ -334,28 +334,43 @@ angular.module('activitiModeler')
 
             // Function to save generated form to Activiti
             $scope.saveGeneratedForm = function (generatedForm) {
-                // always read from $rootScope
-                var currentForm = $rootScope.modalCurrentForm;
-                console.log("modal currentForm:", currentForm);
+                if (!generatedForm || !generatedForm.fields) return;
 
-                var modelId = currentForm.id;
-                console.log("model id", modelId);
+                // Ensure formDefinition has proper arrays
+                const formDefinition = {
+                    name: generatedForm.name,
+                    key: generatedForm.key,
+                    version: generatedForm.version || 0,
+                    fields: Array.isArray(generatedForm.fields) ? generatedForm.fields : [],
+                    outcomes: Array.isArray(generatedForm.outcomes) ? generatedForm.outcomes : []
+                };
 
-                if (!modelId) {
-                    alert("No model id found!");
-                    return;
-                }
+                // Merge with current form metadata
+                const payload = {
+                    ...$scope.currentForm, // id, lastUpdatedBy, version, etc.
+                    formRepresentation: {
+                        id: $scope.currentForm.id,
+                        name: $scope.currentForm.name,
+                        key: $scope.currentForm.key,
+                        description: $scope.currentForm.description || '',
+                        version: $scope.currentForm.version,
+                        lastUpdatedBy: $scope.currentForm.lastUpdatedBy || 'admin',
+                        lastUpdated: new Date().toISOString(),
+                        formDefinition: formDefinition
+                    },
+                    reusable: false,
+                    newVersion: false,
+                    comment: '',
+                    formImageBase64: '' // optional
+                };
 
-                var url = ACTIVITI.CONFIG.contextRoot + '/app/rest/models/' + modelId;
-
-                var payload = angular.copy($scope.$root.currentForm);
-                payload.formRepresentation = generatedForm.formDefinition;
+                const url = ACTIVITI.CONFIG.contextRoot + '/app/rest/models/' + $scope.currentForm.id;
 
                 $http.put(url, payload, { withCredentials: true })
                     .then(function () {
                         $scope.$root.ignoreChanges = true;
                         $location.path('/forms');
-                        $scope.$hide();   // <-- close the modal here
+                        if ($scope.$close) $scope.$close(payload);
                     })
                     .catch(function (err) {
                         console.error('Error updating form:', err);
