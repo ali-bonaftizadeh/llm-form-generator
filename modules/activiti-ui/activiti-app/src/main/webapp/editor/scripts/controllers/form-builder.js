@@ -39,9 +39,13 @@ angular.module('activitiModeler')
             });
 
             $scope.openPrompt = function () {
+                $rootScope.modalCurrentForm = $scope.$root.currentForm;
+                console.log("passed form", $rootScope.modalCurrentForm)
+
                 _internalCreateModal({
                     template: 'editor-app/popups/prompt-modal.html',
-                    scope: $scope
+                    scope: $scope, // can still pass the base scope
+                    controller: 'PromptModalCtrl'
                 }, $modal, $scope);
             };
 
@@ -321,52 +325,47 @@ angular.module('activitiModeler')
         }]);
 
 angular.module('activitiModeler')
-    .controller('PromptModalCtrl', ['$scope', '$http',
-        function ($scope, $http) {
-            console.log("close:", $scope.$close, "dismiss:", $scope.$dismiss);
+    .controller('PromptModalCtrl', ['$scope', '$http', '$location', '$rootScope',
+        function ($scope, $http, $location, $rootScope) {
+            console.log("received form", $rootScope.modalCurrentForm)
 
             $scope.prompt = { text: '' };
             $scope.loading = false;
 
-            // Cancel button closes the modal
-            $scope.cancel = function () {
-                if ($scope.$dismiss) {
-                    $scope.$dismiss();
-                } else {
-                    console.warn("No $dismiss available");
-                }
-            };
-
             // Function to save generated form to Activiti
             $scope.saveGeneratedForm = function (generatedForm) {
-                if (!generatedForm || !generatedForm.formDefinition) return;
+                // always read from $rootScope
+                var currentForm = $rootScope.modalCurrentForm;
+                console.log("modal currentForm:", currentForm);
 
-                var modelId = generatedForm.formDefinition.id;
-                var url = 'http://localhost:9999/activiti-app/app/rest/form-models/' + modelId;
+                var modelId = currentForm.id;
+                console.log("model id", modelId);
 
-                var payload = {
-                    reusable: false,
-                    newVersion: false,
-                    comment: '',
-                    formRepresentation: generatedForm.formDefinition,
-                    formImageBase64: generatedForm.formImageBase64
-                };
+                if (!modelId) {
+                    alert("No model id found!");
+                    return;
+                }
 
-                $http({
-                    method: 'PUT',
-                    url: url,
-                    headers: {
-                        'Content-Type': 'application/json;charset=UTF-8'
-                    },
-                    data: payload,
-                    withCredentials: true
-                }).then(function (response) {
-                    alert('Form updated successfully!');
-                    console.log('Updated form:', response.data);
-                }).catch(function (err) {
-                    console.error('Error updating form:', err);
-                    alert('Failed to update form.');
-                });
+                var url = ACTIVITI.CONFIG.contextRoot + '/app/rest/models/' + modelId;
+
+                var payload = angular.copy($scope.$root.currentForm);
+                payload.formRepresentation = generatedForm.formDefinition;
+
+                $http.put(url, payload, { withCredentials: true })
+                    .then(function () {
+                        $scope.$root.ignoreChanges = true;
+                        $location.path('/forms');
+                        $scope.$hide();   // <-- close the modal here
+                    })
+                    .catch(function (err) {
+                        console.error('Error updating form:', err);
+                        alert('Failed to update form.');
+                    });
+            };
+
+            // Cancel button closes the modal
+            $scope.cancel = function () {
+                $scope.$hide()
             };
 
             // Submit button calls backend
@@ -381,15 +380,7 @@ angular.module('activitiModeler')
                 $http.get('http://localhost:8080/api/form/generate-from-prompt', {
                     params: { prompt: $scope.prompt.text }
                 }).then(function (response) {
-                    if ($scope.$close) {
-                        $scope.$close(response.data);
-
-                        // Save generated form to Activiti
-                        $scope.saveGeneratedForm(response.data);
-
-                    } else {
-                        console.warn("No $close available");
-                    }
+                    $scope.saveGeneratedForm(response.data);
                 }).catch(function (err) {
                     alert("Something went wrong while generating the form.");
                     console.error("Error from API:", err);
@@ -397,5 +388,4 @@ angular.module('activitiModeler')
                     $scope.loading = false;
                 });
             };
-
         }]);
