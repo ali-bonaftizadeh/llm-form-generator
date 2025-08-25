@@ -40,7 +40,7 @@ angular.module('activitiModeler')
 
             $scope.openPrompt = function () {
                 _internalCreateModal({
-                    template: 'editor-app/popups/prompt-modal.html', // you’ll need to create this file
+                    template: 'editor-app/popups/prompt-modal.html',
                     scope: $scope
                 }, $modal, $scope);
             };
@@ -328,23 +328,74 @@ angular.module('activitiModeler')
             $scope.prompt = { text: '' };
             $scope.loading = false;
 
+            // Cancel button closes the modal
             $scope.cancel = function () {
-                $scope.$dismiss();   // ✅ works with Activiti’s modal wrapper
+                if ($scope.$dismiss) {
+                    $scope.$dismiss();
+                } else {
+                    console.warn("No $dismiss available");
+                }
             };
 
-            $scope.submit = function () {
-                $scope.loading = true;
-                $http.post('/api/ai/prompt', { prompt: $scope.prompt.text })
-                    .then(function (response) {
-                        $scope.$close(response.data);   // ✅ return data to FormBuilderController
-                    })
-                    .catch(function (err) {
-                        alert("Something went wrong while generating the form.");
-                        console.error(err);
-                    })
-                    .finally(function () {
-                        $scope.loading = false;
-                    });
+            // Function to save generated form to Activiti
+            $scope.saveGeneratedForm = function (generatedForm) {
+                if (!generatedForm || !generatedForm.formDefinition) return;
+
+                var modelId = generatedForm.formDefinition.id;
+                var url = 'http://localhost:9999/activiti-app/app/rest/form-models/' + modelId;
+
+                var payload = {
+                    reusable: false,
+                    newVersion: false,
+                    comment: '',
+                    formRepresentation: generatedForm.formDefinition,
+                    formImageBase64: generatedForm.formImageBase64
+                };
+
+                $http({
+                    method: 'PUT',
+                    url: url,
+                    headers: {
+                        'Content-Type': 'application/json;charset=UTF-8'
+                    },
+                    data: payload,
+                    withCredentials: true
+                }).then(function (response) {
+                    alert('Form updated successfully!');
+                    console.log('Updated form:', response.data);
+                }).catch(function (err) {
+                    console.error('Error updating form:', err);
+                    alert('Failed to update form.');
+                });
             };
-        }
-    ]);
+
+            // Submit button calls backend
+            $scope.submit = function () {
+                if (!$scope.prompt.text || !$scope.prompt.text.trim()) {
+                    alert("Please enter a prompt first.");
+                    return;
+                }
+
+                $scope.loading = true;
+
+                $http.get('http://localhost:8080/api/form/generate-from-prompt', {
+                    params: { prompt: $scope.prompt.text }
+                }).then(function (response) {
+                    if ($scope.$close) {
+                        $scope.$close(response.data);
+
+                        // Save generated form to Activiti
+                        $scope.saveGeneratedForm(response.data);
+
+                    } else {
+                        console.warn("No $close available");
+                    }
+                }).catch(function (err) {
+                    alert("Something went wrong while generating the form.");
+                    console.error("Error from API:", err);
+                }).finally(function () {
+                    $scope.loading = false;
+                });
+            };
+
+        }]);
