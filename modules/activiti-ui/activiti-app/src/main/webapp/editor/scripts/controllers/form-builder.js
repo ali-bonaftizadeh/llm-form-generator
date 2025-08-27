@@ -329,7 +329,7 @@ angular.module('activitiModeler')
         function ($scope, $http, $location, $rootScope) {
             console.log("received form", $rootScope.modalCurrentForm)
 
-            $scope.prompt = { text: '' };
+            $scope.prompt = {text: ''};
             $scope.loading = false;
 
             // Function to save generated form to Activiti
@@ -340,14 +340,15 @@ angular.module('activitiModeler')
                 const formDefinition = {
                     name: generatedForm.name,
                     key: generatedForm.key,
-                    version: generatedForm.version || 0,
-                    fields: Array.isArray(generatedForm.fields) ? generatedForm.fields : [],
-                    outcomes: Array.isArray(generatedForm.outcomes) ? generatedForm.outcomes : []
+                    fields: generatedForm.fields,
+                    outcomes: generatedForm.outcomes
                 };
 
-                // Merge with current form metadata
+                // Build payload exactly like Activiti expects
                 const payload = {
-                    ...$scope.currentForm, // id, lastUpdatedBy, version, etc.
+                    reusable: false,
+                    newVersion: false,
+                    comment: '',
                     formRepresentation: {
                         id: $scope.currentForm.id,
                         name: $scope.currentForm.name,
@@ -358,15 +359,19 @@ angular.module('activitiModeler')
                         lastUpdated: new Date().toISOString(),
                         formDefinition: formDefinition
                     },
-                    reusable: false,
-                    newVersion: false,
-                    comment: '',
-                    formImageBase64: '' // optional
+                    formImageBase64: $scope.currentForm.formImageBase64 || ''
                 };
 
-                const url = ACTIVITI.CONFIG.contextRoot + '/app/rest/models/' + $scope.currentForm.id;
+                const url = ACTIVITI.CONFIG.contextRoot + '/app/rest/form-models/' + $scope.currentForm.id;
 
-                $http.put(url, payload, { withCredentials: true })
+                $http.put(url, JSON.stringify(payload).replace(/\\"/g, '"')   // \" → "
+                        .replace(/"\[/g, '[')   // "[ → [
+                        .replace(/\]"/g, ']')  // ]" → ]
+                    , {
+                        withCredentials: true,
+                        headers: {'Content-Type': 'application/json'},
+                        transformRequest: angular.identity
+                    })
                     .then(function () {
                         $scope.$root.ignoreChanges = true;
                         $location.path('/forms');

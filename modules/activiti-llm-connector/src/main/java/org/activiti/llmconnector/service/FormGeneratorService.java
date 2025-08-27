@@ -68,11 +68,9 @@ public class FormGeneratorService {
     }
 
     public FormDefinition generateFormFromPrompt(String prompt) {
-//        return chatClient.prompt()
-//                .user(prompt)
-//                .call()
-//                .entity(FormDefinition.class);
-
-        return buildForm();
+        return chatClient.prompt()
+                .user(prompt)
+                .call()
+                .entity(FormDefinition.class);
     }
 }
