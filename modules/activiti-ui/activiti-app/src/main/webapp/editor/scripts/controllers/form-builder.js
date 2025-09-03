@@ -44,7 +44,7 @@ angular.module('activitiModeler')
 
                 _internalCreateModal({
                     template: 'editor-app/popups/prompt-modal.html',
-                    scope: $scope, // can still pass the base scope
+                    scope: $scope,
                     controller: 'PromptModalCtrl'
                 }, $modal, $scope);
             };
@@ -363,7 +363,6 @@ angular.module('activitiModeler')
                 };
 
                 const url = ACTIVITI.CONFIG.contextRoot + '/app/rest/form-models/' + $scope.currentForm.id;
-
                 $http.put(url, JSON.stringify(payload).replace(/\\"/g, '"')   // \" → "
                         .replace(/"\[/g, '[')   // "[ → [
                         .replace(/\]"/g, ']')  // ]" → ]
