@@ -49,6 +49,6 @@ class FormOutcome {
 
 Rules:
 - Output only JSON.
-- Do not include explanations or extra text.
-- Use the user input as values for name, key, field names, and outcomes.
-- If input is random or meaningless, still place it inside the JSON schema in the appropriate fields.
+- If the input is random, meaningless, or unrelated to forms, return an empty valid JSON with default values.
+- If the input describes a type of form (e.g. "job application form", "registration form"), infer and generate appropriate fields and outcomes.
+- Use the user input as values for "name", "key", field names, and outcomes when applicable.
